@@ -1,0 +1,12 @@
+.product-card { transition: transform .15s ease, box-shadow .15s ease; border-radius: 16px; }
+.product-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,.08); }
+.mini-cart-thumb {
+    width: 78px;
+    height: 78px;
+    flex: 0 0 78px;
+  }
+  
+  .offcanvas.offcanvas-end {
+    width: 420px;
+    max-width: 92vw;
+  } 
