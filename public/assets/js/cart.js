@@ -134,3 +134,74 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
+(function () {
+    const BASE = window.BASE_URL ?? '';
+  
+    /* ── Toast helper ── */
+    const $toast = document.getElementById('ts-toast');
+    let toastTimer;
+    function showToast(msg) {
+      clearTimeout(toastTimer);
+      $toast.textContent = msg;
+      $toast.classList.add('visible');
+      toastTimer = setTimeout(() => $toast.classList.remove('visible'), 2400);
+    }
+  
+    /* ── Quick-add click ── */
+    document.addEventListener('click', function (e) {
+      const btn = e.target.closest('.js-quick-add');
+      if (!btn) return;
+  
+      const productId = btn.dataset.productId;
+      if (!productId) return;
+  
+      /* Feedback visivo immediato */
+      btn.classList.add('loading');
+      const originalLabel = btn.textContent;
+      btn.textContent = '…';
+  
+      const fd = new FormData();
+      fd.append('product_id', productId);
+  
+      fetch(BASE + '/index.php?r=cart/addAjax', {
+        method: 'POST',
+        body: fd,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          /* Aggiorna badge navbar */
+          const badge = document.getElementById('cartBadge');
+          if (badge) {
+            badge.textContent = data.cartCount;
+            badge.classList.remove('d-none');
+          }
+  
+          /* Aggiorna contenuto mini-cart (offcanvas) */
+          const miniContent = document.getElementById('miniCartContent');
+          if (miniContent && data.miniCartHtml) {
+            miniContent.innerHTML = data.miniCartHtml;
+          }
+  
+          /* Feedback check momentaneo sul bottone */
+          btn.textContent = '✓';
+          setTimeout(() => {
+            btn.textContent = originalLabel;
+            btn.classList.remove('loading');
+          }, 900);
+  
+          showToast('Aggiunto al carrello!');
+        } else {
+          btn.textContent = originalLabel;
+          btn.classList.remove('loading');
+          showToast(data.message ?? 'Errore, riprova.');
+        }
+      })
+      .catch(() => {
+        btn.textContent = originalLabel;
+        btn.classList.remove('loading');
+        showToast('Errore di rete, riprova.');
+      });
+    });
+  })();

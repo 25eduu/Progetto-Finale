@@ -19,12 +19,14 @@
         </form>
 
         <div class="text-center mt-3">
-          <a href="<?= BASE_URL ?>/index.php?r=auth/register">Non hai un account? Registrati</a>
+          <a href="<?= BASE_URL ?>/index.php?r=auth/registerForm">Non hai un account? Registrati</a>
         </div>
 
         <hr class="my-4">
 
-        <div id="googleLoginBtn"></div>
+        <div class="text-center mt-3">
+          <div id="googleLoginBtn" class="d-inline-block"></div>
+        </div>
       </div>
     </div>
   </div>

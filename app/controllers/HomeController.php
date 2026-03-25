@@ -12,8 +12,9 @@ class HomeController {
 
   public function index(): void {
     $productModel = new Product($this->pdo);
-    $products = $productModel->getLatest(8); // 8 prodotti in vetrina
-
+    $products = $productModel->getLatest(8);
+  
+    $pdo = $this->pdo;
     require __DIR__ . '/../views/layouts/header.php';
     require __DIR__ . '/../views/home/index.php';
     require __DIR__ . '/../views/layouts/footer.php';

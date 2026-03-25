@@ -24,12 +24,14 @@
         </form>
 
         <div class="text-center mt-3">
-          <a href="<?= BASE_URL ?>/index.php?r=auth/login">Hai già un account? Accedi</a>
+          <a href="<?= BASE_URL ?>/index.php?r=auth/loginForm">Hai già un account? Accedi</a>
         </div>
 
         <hr class="my-4">
 
-        <div id="googleRegisterBtn"></div>
+        <div class="text-center mt-3">
+          <div id="googleLoginBtn" class="d-inline-block"></div>
+        </div>
       </div>
     </div>
   </div>

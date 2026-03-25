@@ -76,7 +76,7 @@ class Cart {
     $stmt->execute([$userId, $productId]);
   }
 
-  public function clearCart(int $userId): void {
+  public function clear(int $userId): void {
     $stmt = $this->pdo->prepare("DELETE FROM cart WHERE user_id = ?");
     $stmt->execute([$userId]);
   }

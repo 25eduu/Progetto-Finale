@@ -6,12 +6,18 @@ if (isset($_SESSION['user_id']) || isset($_SESSION['user']['id'])) {
     ? (int)$_SESSION['user_id']
     : (int)$_SESSION['user']['id'];
 
-  try {
-    require_once __DIR__ . '/../../models/Cart.php';
-    $cartModelHeader = new Cart($pdo);
-    $cartCount = $cartModelHeader->countItems($currentUserId);
-  } catch (Throwable $e) {
-    $cartCount = 0;
+  if (isset($pdo) && $pdo instanceof PDO) {
+    try {
+      require_once __DIR__ . '/../../models/Cart.php';
+      $cartModelHeader = new Cart($pdo);
+      $cartCount = $cartModelHeader->countItems($currentUserId);
+    } catch (Throwable $e) {
+      $cartCount = 0;
+    }
+  } else {
+    foreach (($_SESSION['cart'] ?? []) as $item) {
+      $cartCount += (int)$item['quantity'];
+    }
   }
 } else {
   foreach (($_SESSION['cart'] ?? []) as $item) {
