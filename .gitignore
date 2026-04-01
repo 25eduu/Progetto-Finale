@@ -1,0 +1,12 @@
+# environment variables
+.env
+
+# logs
+logs/*.log
+
+# uploads
+public/assets/uploads/
+
+# OS files
+.DS_Store
+Thumbs.db
