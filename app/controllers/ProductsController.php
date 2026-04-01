@@ -11,14 +11,14 @@ class ProductsController {
   }
 
   public function index(): void {
-  $productModel = new Product($this->pdo);
-  $products = $productModel->getLatest(8);
+    $productModel = new Product($this->pdo);
+    $products = $productModel->getAll();
 
-  $pdo = $this->pdo;
-  require __DIR__ . '/../views/layouts/header.php';
-  require __DIR__ . '/../views/home/index.php';
-  require __DIR__ . '/../views/layouts/footer.php';
-  } 
+    $pdo = $this->pdo;
+    require __DIR__ . '/../views/layouts/header.php';
+    require __DIR__ . '/../views/products/index.php';
+    require __DIR__ . '/../views/layouts/footer.php';
+}
 
   public function show(): void {
     $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;

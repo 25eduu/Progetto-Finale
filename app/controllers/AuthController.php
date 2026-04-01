@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../models/Cart.php';
+require_once __DIR__ . '/../services/MailService.php';
 
 class AuthController {
   private PDO $pdo;
@@ -58,9 +59,7 @@ class AuthController {
       die('Credenziali non valide');
     }
 
-    $this->loginUser($user);
-
-    header('Location: ' . BASE_URL . '/index.php');
+    $this->startTwoFactorLogin($user);
     exit;
   }
 
@@ -178,6 +177,145 @@ class AuthController {
     $this->loginUser($user);
 
     header('Location: ' . BASE_URL . '/index.php');
-    exit;
+  }
+  private function startTwoFactorLogin(array $user): void
+  {
+      $code = (string) random_int(100000, 999999);
+      $expiresAt = date('Y-m-d H:i:s', strtotime('+10 minutes'));
+
+      $this->pdo->prepare("
+          UPDATE two_factor_codes
+          SET is_used = 1
+          WHERE user_id = ? AND is_used = 0
+      ")->execute([(int)$user['id']]);
+
+      $this->pdo->prepare("
+          INSERT INTO two_factor_codes (user_id, otp_code, expires_at, is_used)
+          VALUES (?, ?, ?, 0)
+      ")->execute([
+          (int)$user['id'],
+          $code,
+          $expiresAt
+      ]);
+
+      try {
+        $mailService = new MailService();
+        $mailService->sendTwoFactorCode(
+            $user['email'],
+            $user['full_name'],
+            $code
+        );
+        } catch (Throwable $e) {
+            die('Errore invio mail: ' . $e->getMessage());
+        }
+
+      $_SESSION['pending_2fa_user_id'] = (int)$user['id'];
+      $_SESSION['pending_2fa_email'] = $user['email'];
+      $_SESSION['pending_2fa_expires'] = time() + 600;
+      $_SESSION['otp_attempts'] = 0;
+
+      header('Location: ' . BASE_URL . '/index.php?r=auth/verify2faForm');
+      exit;
+  }
+
+  public function verify2faForm(): void
+  {
+      if (empty($_SESSION['pending_2fa_user_id'])) {
+          header('Location: ' . BASE_URL . '/index.php?r=auth/loginForm');
+          exit;
+      }
+
+      $pdo = $this->pdo;
+      require __DIR__ . '/../views/layouts/header.php';
+      require __DIR__ . '/../views/auth/verify2fa.php';
+      require __DIR__ . '/../views/layouts/footer.php';
+  }
+
+  public function verify2fa(): void
+  {
+      if (empty($_SESSION['pending_2fa_user_id'])) {
+          header('Location: ' . BASE_URL . '/index.php?r=auth/loginForm');
+          exit;
+      }
+
+      if (time() > (int)($_SESSION['pending_2fa_expires'] ?? 0)) {
+          unset($_SESSION['pending_2fa_user_id'], $_SESSION['pending_2fa_email'], $_SESSION['pending_2fa_expires'], $_SESSION['otp_attempts']);
+          die('Codice scaduto. Rifai il login.');
+      }
+
+      $otp = trim($_POST['otp_code'] ?? '');
+
+      if (!preg_match('/^\d{6}$/', $otp)) {
+          die('Codice non valido');
+      }
+
+      $_SESSION['otp_attempts'] = (int)($_SESSION['otp_attempts'] ?? 0) + 1;
+
+      if ($_SESSION['otp_attempts'] > 5) {
+          unset($_SESSION['pending_2fa_user_id'], $_SESSION['pending_2fa_email'], $_SESSION['pending_2fa_expires'], $_SESSION['otp_attempts']);
+          die('Troppi tentativi. Rifai il login.');
+      }
+
+      $stmt = $this->pdo->prepare("
+          SELECT *
+          FROM two_factor_codes
+          WHERE user_id = ?
+            AND otp_code = ?
+            AND is_used = 0
+            AND expires_at >= NOW()
+          ORDER BY id DESC
+          LIMIT 1
+      ");
+      $stmt->execute([
+          (int)$_SESSION['pending_2fa_user_id'],
+          $otp
+      ]);
+      $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+      if (!$row) {
+          die('Codice non valido o scaduto');
+      }
+
+      $this->pdo->prepare("
+          UPDATE two_factor_codes
+          SET is_used = 1
+          WHERE id = ?
+      ")->execute([(int)$row['id']]);
+
+      $stmt = $this->pdo->prepare("SELECT * FROM users WHERE id = ? LIMIT 1");
+      $stmt->execute([(int)$_SESSION['pending_2fa_user_id']]);
+      $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+      if (!$user) {
+          die('Utente non trovato');
+      }
+
+      session_regenerate_id(true);
+
+      unset($_SESSION['pending_2fa_user_id'], $_SESSION['pending_2fa_email'], $_SESSION['pending_2fa_expires'], $_SESSION['otp_attempts']);
+
+      $this->loginUser($user);
+
+      header('Location: ' . BASE_URL . '/index.php');
+      exit;
+  }
+
+  public function resend2fa(): void
+  {
+      if (empty($_SESSION['pending_2fa_user_id'])) {
+          header('Location: ' . BASE_URL . '/index.php?r=auth/loginForm');
+          exit;
+      }
+
+      $stmt = $this->pdo->prepare("SELECT * FROM users WHERE id = ? LIMIT 1");
+      $stmt->execute([(int)$_SESSION['pending_2fa_user_id']]);
+      $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+      if (!$user) {
+          header('Location: ' . BASE_URL . '/index.php?r=auth/loginForm');
+          exit;
+      }
+
+      $this->startTwoFactorLogin($user);
   }
 }

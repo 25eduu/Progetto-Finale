@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/../services/MailService.php';
 require_once __DIR__ . '/../models/Product.php';
 require_once __DIR__ . '/../models/Cart.php';
 
@@ -226,6 +227,12 @@ class CheckoutController {
       }
 
       $this->pdo->commit();
+      try {
+        $mailService = new MailService();
+        $mailService->sendOrderConfirmation($email, $name, $orderId, $total);
+      } catch (Throwable $e) {
+          // non bloccare il checkout se l'email fallisce
+      }
 
       $_SESSION['last_order_id'] = $orderId;
       $_SESSION['last_order_email'] = $email;
