@@ -23,6 +23,30 @@ class CartController {
     return null;
   }
 
+  private function getProductOrNull(int $productId): ?array {
+    $productModel = new Product($this->pdo);
+    return $productModel->findById($productId);
+  }
+
+  private function getCurrentQuantity(int $productId): int {
+    $userId = $this->getUserId();
+
+    if ($userId) {
+      $cartModel = new Cart($this->pdo);
+      $items = $cartModel->getItemsByUserId($userId);
+
+      foreach ($items as $item) {
+        if ((int)$item['product_id'] === $productId) {
+          return (int)$item['quantity'];
+        }
+      }
+
+      return 0;
+    }
+
+    return (int)($_SESSION['cart'][$productId]['quantity'] ?? 0);
+  }
+
   private function getCartItems(): array {
     $userId = $this->getUserId();
     $items = [];
@@ -90,11 +114,12 @@ class CartController {
     return ob_get_clean();
   }
 
-  private function jsonCartResponse(): void {
+  private function jsonResponse(bool $success, ?string $message = null): void {
     header('Content-Type: application/json; charset=utf-8');
 
     echo json_encode([
-      'success' => true,
+      'success' => $success,
+      'message' => $message,
       'cartCount' => $this->getCartCount(),
       'miniCartHtml' => $this->renderMiniCartHtml(),
     ]);
@@ -119,9 +144,20 @@ class CartController {
 
   public function add(): void {
     $productId = isset($_POST['product_id']) ? (int)$_POST['product_id'] : 0;
+
     if ($productId <= 0) {
       header('Location: ' . BASE_URL . '/index.php?r=products/index');
       exit;
+    }
+
+    $product = $this->getProductOrNull($productId);
+    if (!$product) {
+      die('Prodotto non trovato');
+    }
+
+    $currentQty = $this->getCurrentQuantity($productId);
+    if ($currentQty + 1 > (int)$product['stock']) {
+      die('Stock insufficiente per questo prodotto');
     }
 
     $userId = $this->getUserId();
@@ -147,10 +183,19 @@ class CartController {
 
   public function addAjax(): void {
     $productId = isset($_POST['product_id']) ? (int)$_POST['product_id'] : 0;
+
     if ($productId <= 0) {
-      header('Content-Type: application/json; charset=utf-8');
-      echo json_encode(['success' => false, 'message' => 'Prodotto non valido']);
-      exit;
+      $this->jsonResponse(false, 'Prodotto non valido');
+    }
+
+    $product = $this->getProductOrNull($productId);
+    if (!$product) {
+      $this->jsonResponse(false, 'Prodotto non trovato');
+    }
+
+    $currentQty = $this->getCurrentQuantity($productId);
+    if ($currentQty + 1 > (int)$product['stock']) {
+      $this->jsonResponse(false, 'Hai raggiunto la quantità massima disponibile');
     }
 
     $userId = $this->getUserId();
@@ -170,7 +215,7 @@ class CartController {
       $_SESSION['cart'][$productId]['quantity']++;
     }
 
-    $this->jsonCartResponse();
+    $this->jsonResponse(true, 'Prodotto aggiunto al carrello');
   }
 
   public function update(): void {
@@ -180,6 +225,15 @@ class CartController {
     if ($productId <= 0) {
       header('Location: ' . BASE_URL . '/index.php?r=cart/index');
       exit;
+    }
+
+    $product = $this->getProductOrNull($productId);
+    if (!$product) {
+      die('Prodotto non trovato');
+    }
+
+    if ($quantity > (int)$product['stock']) {
+      die('Quantità superiore allo stock disponibile');
     }
 
     $userId = $this->getUserId();
@@ -204,9 +258,16 @@ class CartController {
     $quantity = isset($_POST['quantity']) ? (int)$_POST['quantity'] : 0;
 
     if ($productId <= 0) {
-      header('Content-Type: application/json; charset=utf-8');
-      echo json_encode(['success' => false, 'message' => 'Prodotto non valido']);
-      exit;
+      $this->jsonResponse(false, 'Prodotto non valido');
+    }
+
+    $product = $this->getProductOrNull($productId);
+    if (!$product) {
+      $this->jsonResponse(false, 'Prodotto non trovato');
+    }
+
+    if ($quantity > (int)$product['stock']) {
+      $this->jsonResponse(false, 'Quantità superiore allo stock disponibile');
     }
 
     $userId = $this->getUserId();
@@ -222,7 +283,7 @@ class CartController {
       }
     }
 
-    $this->jsonCartResponse();
+    $this->jsonResponse(true, 'Carrello aggiornato');
   }
 
   public function remove(): void {
@@ -250,9 +311,7 @@ class CartController {
     $productId = isset($_POST['product_id']) ? (int)$_POST['product_id'] : 0;
 
     if ($productId <= 0) {
-      header('Content-Type: application/json; charset=utf-8');
-      echo json_encode(['success' => false, 'message' => 'Prodotto non valido']);
-      exit;
+      $this->jsonResponse(false, 'Prodotto non valido');
     }
 
     $userId = $this->getUserId();
@@ -264,6 +323,6 @@ class CartController {
       unset($_SESSION['cart'][$productId]);
     }
 
-    $this->jsonCartResponse();
+    $this->jsonResponse(true, 'Prodotto rimosso dal carrello');
   }
 }

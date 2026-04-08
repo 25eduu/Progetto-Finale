@@ -71,7 +71,7 @@ class MailService
             $mail->Username   = $this->smtpUser;
             $mail->Password   = $this->smtpPass;
             $mail->SMTPSecure = 'tls';
-            $mail->Port       = 465;
+            $mail->Port       = 587;
 
             $mail->setFrom($this->fromEmail, $this->fromName);
             $mail->addAddress($toEmail);

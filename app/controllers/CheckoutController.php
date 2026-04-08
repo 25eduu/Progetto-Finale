@@ -18,6 +18,12 @@ class CheckoutController {
     return null;
   }
 
+  private function redirectWithError(string $message): void {
+    $_SESSION['checkout_error'] = $message;
+    header('Location: ' . BASE_URL . '/index.php?r=checkout/index');
+    exit;
+  }
+
   private function getCartItems(): array {
     $userId = $this->getUserId();
 
@@ -31,11 +37,15 @@ class CheckoutController {
 
     foreach ($_SESSION['cart'] ?? [] as $id => $item) {
       $product = $productModel->findById((int)$id);
-      if (!$product) continue;
+      if (!$product) {
+        continue;
+      }
+
+      $qty = max(1, (int)($item['quantity'] ?? 1));
 
       $items[] = [
         'product_id' => (int)$product['id'],
-        'quantity'   => (int)$item['quantity'],
+        'quantity'   => $qty,
         'price'      => (float)$product['price'],
         'name'       => $product['name'],
         'stock'      => (int)$product['stock'],
@@ -61,6 +71,31 @@ class CheckoutController {
     return (float)($stmt->fetchColumn() ?: 0);
   }
 
+  private function validateCartStock(array $items): void {
+    if (empty($items)) {
+      throw new RuntimeException('Il carrello è vuoto.');
+    }
+
+    foreach ($items as $item) {
+      $qty = (int)$item['quantity'];
+      $stock = (int)$item['stock'];
+
+      if ($qty <= 0) {
+        throw new RuntimeException('Quantità non valida per il prodotto: ' . $item['name']);
+      }
+
+      if ($stock <= 0) {
+        throw new RuntimeException('Prodotto esaurito: ' . $item['name']);
+      }
+
+      if ($qty > $stock) {
+        throw new RuntimeException(
+          'Stock insufficiente per "' . $item['name'] . '". Disponibili: ' . $stock
+        );
+      }
+    }
+  }
+
   public function index(): void {
     $items = $this->getCartItems();
     $total = $this->getTotal($items);
@@ -68,6 +103,12 @@ class CheckoutController {
     if (empty($items)) {
       header('Location: ' . BASE_URL . '/index.php?r=cart/index');
       exit;
+    }
+
+    try {
+      $this->validateCartStock($items);
+    } catch (Throwable $e) {
+      $this->redirectWithError($e->getMessage());
     }
 
     $userId = $this->getUserId();
@@ -81,6 +122,7 @@ class CheckoutController {
 
   public function process(): void {
     $items = $this->getCartItems();
+
     if (empty($items)) {
       header('Location: ' . BASE_URL . '/index.php?r=cart/index');
       exit;
@@ -91,12 +133,21 @@ class CheckoutController {
 
     $name = trim($_POST['name'] ?? '');
     $email = trim($_POST['email'] ?? '');
-    $paymentMethodInput = $_POST['payment_method'] ?? 'card';
-    $useWallet = isset($_POST['use_wallet']) && $_POST['use_wallet'] === '1';
+    $paymentMethodInput = trim($_POST['payment_method'] ?? 'card');
     $notes = trim($_POST['notes'] ?? '');
 
     if ($name === '' || $email === '') {
-      die('Nome ed email obbligatori');
+      $this->redirectWithError('Nome ed email obbligatori');
+    }
+
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+      $this->redirectWithError('Email non valida');
+    }
+
+    try {
+      $this->validateCartStock($items);
+    } catch (Throwable $e) {
+      $this->redirectWithError($e->getMessage());
     }
 
     $walletBalance = $this->getWalletBalance($userId);
@@ -108,33 +159,35 @@ class CheckoutController {
     $status = 'created';
 
     if ($paymentMethodInput === 'wallet') {
-      if ($walletBalance < $total) {
-        die('Saldo wallet insufficiente');
+      if (!$userId) {
+        $this->redirectWithError('Devi essere loggato per usare il wallet');
       }
+
+      if ($walletBalance < $total) {
+        $this->redirectWithError('Saldo wallet insufficiente');
+      }
+
       $walletAmountPaid = $total;
       $paymentStatus = 'paid';
+      $status = 'paid';
     } elseif ($paymentMethodInput === 'card') {
-      if ($useWallet && $walletBalance > 0) {
-        $walletAmountPaid = min($walletBalance, $total);
-        $stripeAmountPaid = $total - $walletAmountPaid;
-        $paymentMethod = $walletAmountPaid > 0 ? 'mixed' : 'card';
-      } else {
-        $stripeAmountPaid = $total;
-      }
+      $stripeAmountPaid = $total;
     } elseif ($paymentMethodInput === 'paypal') {
-      if ($useWallet && $walletBalance > 0) {
-        $walletAmountPaid = min($walletBalance, $total);
-        $paypalAmountPaid = $total - $walletAmountPaid;
-        $paymentMethod = $walletAmountPaid > 0 ? 'mixed' : 'paypal';
-      } else {
-        $paypalAmountPaid = $total;
-      }
+      $paypalAmountPaid = $total;
     } elseif ($paymentMethodInput === 'mixed') {
+      if (!$userId) {
+        $this->redirectWithError('Devi essere loggato per usare il wallet');
+      }
+
+      if ($walletBalance <= 0) {
+        $this->redirectWithError('Non hai saldo wallet disponibile');
+      }
+
       $walletAmountPaid = min($walletBalance, $total);
       $stripeAmountPaid = $total - $walletAmountPaid;
       $paymentMethod = 'mixed';
     } else {
-      die('Metodo di pagamento non valido');
+      $this->redirectWithError('Metodo di pagamento non valido');
     }
 
     $this->pdo->beginTransaction();
@@ -180,33 +233,46 @@ class CheckoutController {
         VALUES (?, ?, ?, ?)
       ");
 
+      $stmtStock = $this->pdo->prepare("
+        UPDATE products
+        SET stock = stock - ?
+        WHERE id = ? AND stock >= ?
+      ");
+
       foreach ($items as $i) {
         $stmtItem->execute([
           $orderId,
-          $i['product_id'],
-          $i['quantity'],
-          $i['price']
+          (int)$i['product_id'],
+          (int)$i['quantity'],
+          (float)$i['price']
         ]);
 
-        $stmtStock = $this->pdo->prepare("
-          UPDATE products
-          SET stock = stock - ?
-          WHERE id = ? AND stock >= ?
-        ");
         $stmtStock->execute([
-          $i['quantity'],
-          $i['product_id'],
-          $i['quantity']
+          (int)$i['quantity'],
+          (int)$i['product_id'],
+          (int)$i['quantity']
         ]);
+
+        if ($stmtStock->rowCount() === 0) {
+          throw new RuntimeException('Stock insufficiente per il prodotto: ' . $i['name']);
+        }
       }
 
-      if ($walletAmountPaid > 0 && $userId) {
+      if ($walletAmountPaid > 0) {
+        if (!$userId) {
+          throw new RuntimeException('Utente non valido per addebito wallet');
+        }
+
         $stmtWallet = $this->pdo->prepare("
           UPDATE users
           SET wallet_balance = wallet_balance - ?
-          WHERE id = ?
+          WHERE id = ? AND wallet_balance >= ?
         ");
-        $stmtWallet->execute([$walletAmountPaid, $userId]);
+        $stmtWallet->execute([$walletAmountPaid, $userId, $walletAmountPaid]);
+
+        if ($stmtWallet->rowCount() === 0) {
+          throw new RuntimeException('Saldo wallet insufficiente');
+        }
 
         $stmtLog = $this->pdo->prepare("
           INSERT INTO wallet_logs (user_id, amount, description, created_at)
@@ -215,7 +281,7 @@ class CheckoutController {
         $stmtLog->execute([
           $userId,
           -$walletAmountPaid,
-          'Pagamento ordine #' . $orderId
+          sprintf('Pagamento ordine #%d', $orderId)
         ]);
       }
 
@@ -227,11 +293,12 @@ class CheckoutController {
       }
 
       $this->pdo->commit();
+
       try {
         $mailService = new MailService();
         $mailService->sendOrderConfirmation($email, $name, $orderId, $total);
       } catch (Throwable $e) {
-          // non bloccare il checkout se l'email fallisce
+        // Non bloccare il checkout se l'email fallisce
       }
 
       $_SESSION['last_order_id'] = $orderId;
@@ -239,16 +306,22 @@ class CheckoutController {
 
       header('Location: ' . BASE_URL . '/index.php?r=checkout/success');
       exit;
-
     } catch (Throwable $e) {
-      $this->pdo->rollBack();
-      die('Errore checkout: ' . $e->getMessage());
+      if ($this->pdo->inTransaction()) {
+        $this->pdo->rollBack();
+      }
+      $this->redirectWithError('Errore checkout: ' . $e->getMessage());
     }
   }
 
   public function success(): void {
     $orderId = $_SESSION['last_order_id'] ?? null;
     $orderEmail = $_SESSION['last_order_email'] ?? null;
+
+    if (!$orderId) {
+      header('Location: ' . BASE_URL . '/index.php');
+      exit;
+    }
 
     $pdo = $this->pdo;
     require __DIR__ . '/../views/layouts/header.php';
