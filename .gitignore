@@ -7,6 +7,8 @@ logs/*.log
 # uploads
 public/assets/uploads/
 
+vendor/
+
 # OS files
 .DS_Store
 Thumbs.db
