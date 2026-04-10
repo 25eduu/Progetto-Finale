@@ -38,6 +38,10 @@
             <a href="<?= BASE_URL ?>/index.php" class="btn btn-outline-dark btn-lg rounded-3 px-4">
               Torna alla home
             </a>
+            <a href="<?= BASE_URL ?>/index.php?r=account/dashboard"
+              class="btn btn-outline-dark btn-lg rounded-3 px-4">
+              Vai alla dashboard
+            </a>
           </div>
         </div>
       </div>

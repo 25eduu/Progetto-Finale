@@ -65,14 +65,31 @@ if (isset($_SESSION['user_id']) || isset($_SESSION['user']['id'])) {
           </button>
         </li>
 
+        <?php
+        $headerWalletBalance = 0.0;
+
+        if (!empty($_SESSION['user_id']) && isset($pdo)) {
+          $stmt = $pdo->prepare("SELECT wallet_balance FROM users WHERE id = ? LIMIT 1");
+          $stmt->execute([(int)$_SESSION['user_id']]);
+          $headerWalletBalance = (float)($stmt->fetchColumn() ?: 0);
+        }
+        ?>
+
         <?php if (!empty($_SESSION['user_id'])): ?>
-        <li class="nav-item">
-          <span class="nav-link">Ciao, <?= htmlspecialchars($_SESSION['user']['full_name'] ?? 'Utente') ?></span>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="<?= BASE_URL ?>/index.php?r=auth/logout">Logout</a>
-        </li>
-      <?php else: ?>
+          <li class="nav-item">
+            <a class="nav-link fw-semibold text-success"
+              href="<?= BASE_URL ?>/index.php?r=account/dashboard">
+              € <?= number_format($headerWalletBalance, 2, ',', '.') ?>
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link"
+              href="<?= BASE_URL ?>/index.php?r=account/dashboard">
+              Ciao, <?= htmlspecialchars($_SESSION['user']['full_name'] ?? 'Utente') ?>
+            </a>
+          </li>
+        <?php else: ?>
         <li class="nav-item">
           <a class="nav-link" href="<?= BASE_URL ?>/index.php?r=auth/loginForm">Login</a>
         </li>

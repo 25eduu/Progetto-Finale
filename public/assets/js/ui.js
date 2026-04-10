@@ -129,3 +129,77 @@ document.addEventListener('DOMContentLoaded', () => {
 
   activatePaymentMethod(paymentMethodInput.value || 'card');
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+  const options = document.querySelectorAll('.payment-option');
+  const panels = document.querySelectorAll('.payment-panel');
+  const paymentMethodInput = document.getElementById('paymentMethodInput');
+  const total = parseFloat(document.getElementById('checkoutTotalValue')?.value || '0');
+  const wallet = parseFloat(document.getElementById('checkoutWalletValue')?.value || '0');
+
+  const walletSummary = document.getElementById('checkoutWalletSummary');
+  const walletUsed = document.getElementById('checkoutWalletUsed');
+  const cardRemaining = document.getElementById('checkoutCardRemaining');
+  const displayedTotal = document.getElementById('checkoutDisplayedTotal');
+  const submitBtn = document.getElementById('checkoutSubmitBtn');
+
+  const formatEuro = (value) => {
+    return '€ ' + value.toLocaleString('it-IT', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  };
+
+  const updateSummary = (method) => {
+    if (!walletSummary || !walletUsed || !cardRemaining || !displayedTotal || !submitBtn) {
+      return;
+    }
+
+    walletSummary.classList.add('d-none');
+    displayedTotal.textContent = formatEuro(total);
+
+    if (method === 'wallet') {
+      walletSummary.classList.remove('d-none');
+      walletUsed.textContent = '- ' + formatEuro(total);
+      cardRemaining.textContent = formatEuro(0);
+      submitBtn.textContent = 'Conferma ordine';
+      return;
+    }
+
+    if (method === 'mixed') {
+      const used = Math.min(wallet, total);
+      const remaining = Math.max(0, total - used);
+
+      walletSummary.classList.remove('d-none');
+      walletUsed.textContent = '- ' + formatEuro(used);
+      cardRemaining.textContent = formatEuro(remaining);
+      submitBtn.textContent = 'Paga il residuo con carta';
+      return;
+    }
+
+    if (method === 'paypal') {
+      submitBtn.textContent = 'Continua con PayPal';
+      return;
+    }
+
+    submitBtn.textContent = 'Vai al pagamento sicuro';
+  };
+
+  options.forEach(option => {
+    option.addEventListener('click', () => {
+      const method = option.dataset.method;
+
+      options.forEach(btn => btn.classList.remove('active'));
+      option.classList.add('active');
+
+      panels.forEach(panel => {
+        panel.classList.toggle('active', panel.dataset.panel === method);
+      });
+
+      paymentMethodInput.value = method;
+      updateSummary(method);
+    });
+  });
+
+  updateSummary(paymentMethodInput.value);
+});

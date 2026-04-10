@@ -1,3 +1,8 @@
+<?php
+$canUseWalletOnly = $walletBalance >= $total;
+$canUseMixed = $walletBalance > 0 && $walletBalance < $total;
+?>
+
 <h1 class="display-6 fw-semibold mb-2">Checkout</h1>
 <p class="text-muted mb-4">Completa il tuo ordine scegliendo il metodo di pagamento che preferisci.</p>
 
@@ -60,7 +65,7 @@
               <button type="button" class="payment-option active" data-method="card">
                 <div>
                   <div class="payment-option__title">Carta di credito o debito</div>
-                  <div class="payment-option__desc">Visa, Mastercard, AMEX</div>
+                  <div class="payment-option__desc">Verrai reindirizzato alla pagina di pagamento sicura di Stripe</div>
                 </div>
                 <div class="payment-option__icon">💳</div>
               </button>
@@ -68,12 +73,12 @@
               <button type="button" class="payment-option" data-method="paypal">
                 <div>
                   <div class="payment-option__title">PayPal</div>
-                  <div class="payment-option__desc">Paga con il tuo account PayPal</div>
+                  <div class="payment-option__desc">Pagamento con account PayPal</div>
                 </div>
                 <div class="payment-option__icon">🅿️</div>
               </button>
 
-              <?php if ($walletBalance >= $total): ?>
+              <?php if ($canUseWalletOnly): ?>
                 <button type="button" class="payment-option" data-method="wallet">
                   <div>
                     <div class="payment-option__title">Solo wallet</div>
@@ -85,11 +90,11 @@
                 </button>
               <?php endif; ?>
 
-              <?php if ($walletBalance > 0): ?>
+              <?php if ($canUseMixed): ?>
                 <button type="button" class="payment-option" data-method="mixed">
                   <div>
                     <div class="payment-option__title">Wallet + carta</div>
-                    <div class="payment-option__desc">Scala prima il wallet e paga il resto con carta</div>
+                    <div class="payment-option__desc">Scala prima il wallet e paga il resto sulla pagina sicura di Stripe</div>
                   </div>
                   <div class="payment-option__icon">💳</div>
                 </button>
@@ -100,19 +105,9 @@
           <div id="paymentPanels" class="mt-4">
             <div class="payment-panel active" data-panel="card">
               <div class="rounded-4 border p-4 bg-light-subtle">
-                <div class="fw-semibold mb-2">Carta di credito o debito</div>
-                <div class="text-muted small mb-3">Interfaccia dimostrativa, poi la collegherai a Stripe.</div>
-
-                <div class="row g-3">
-                  <div class="col-12">
-                    <input type="text" class="form-control rounded-3" placeholder="Numero carta">
-                  </div>
-                  <div class="col-md-6">
-                    <input type="text" class="form-control rounded-3" placeholder="Scadenza MM/AA">
-                  </div>
-                  <div class="col-md-6">
-                    <input type="text" class="form-control rounded-3" placeholder="CVV">
-                  </div>
+                <div class="fw-semibold mb-2">Pagamento con carta</div>
+                <div class="text-muted small mb-0">
+                  Dopo aver cliccato sul pulsante finale verrai reindirizzato su Stripe per inserire i dati della carta e completare il pagamento in modo sicuro.
                 </div>
               </div>
             </div>
@@ -120,47 +115,34 @@
             <div class="payment-panel" data-panel="paypal">
               <div class="rounded-4 border p-4 bg-light-subtle">
                 <div class="fw-semibold mb-2">PayPal selezionato</div>
-                <div class="text-muted small">
-                  Al click su “Conferma ordine” userai il flusso PayPal del tuo progetto.
+                <div class="text-muted small mb-0">
+                  Dopo il click finale userai il flusso PayPal del progetto.
                 </div>
               </div>
             </div>
 
-            <?php if ($walletBalance >= $total): ?>
+            <?php if ($canUseWalletOnly): ?>
               <div class="payment-panel" data-panel="wallet">
                 <div class="rounded-4 border p-4 bg-light-subtle">
                   <div class="fw-semibold mb-2">Pagamento con wallet</div>
-                  <div class="text-muted small">
-                    Verrà usato solo il saldo disponibile del tuo account.
+                  <div class="text-muted small mb-2">
+                    L'importo totale verrà scalato direttamente dal saldo disponibile del tuo account.
                   </div>
-                  <div class="mt-3 fw-bold">
+                  <div class="fw-bold">
                     Saldo disponibile: € <?= number_format($walletBalance, 2, ',', '.') ?>
                   </div>
                 </div>
               </div>
             <?php endif; ?>
 
-            <?php if ($walletBalance > 0): ?>
+            <?php if ($canUseMixed): ?>
               <div class="payment-panel" data-panel="mixed">
                 <div class="rounded-4 border p-4 bg-light-subtle">
                   <div class="fw-semibold mb-2">Wallet + carta</div>
-                  <div class="text-muted small mb-3">
-                    Il sistema scalerà prima il wallet e userà la carta per la parte rimanente.
+                  <div class="text-muted small mb-2">
+                    Useremo prima il saldo wallet disponibile e poi verrai reindirizzato su Stripe per pagare la parte rimanente con carta.
                   </div>
-
-                  <div class="row g-3">
-                    <div class="col-12">
-                      <input type="text" class="form-control rounded-3" placeholder="Numero carta">
-                    </div>
-                    <div class="col-md-6">
-                      <input type="text" class="form-control rounded-3" placeholder="Scadenza MM/AA">
-                    </div>
-                    <div class="col-md-6">
-                      <input type="text" class="form-control rounded-3" placeholder="CVV">
-                    </div>
-                  </div>
-
-                  <div class="mt-3 small text-muted">
+                  <div class="small text-muted">
                     Saldo wallet disponibile: € <?= number_format($walletBalance, 2, ',', '.') ?>
                   </div>
                 </div>
@@ -179,8 +161,8 @@
           </div>
 
           <div class="d-grid gap-2 mt-4">
-            <button class="btn btn-dark btn-lg rounded-3">
-              Conferma ordine
+            <button class="btn btn-dark btn-lg rounded-3" id="checkoutSubmitBtn" type="submit">
+              Vai al pagamento sicuro
             </button>
             <a href="<?= BASE_URL ?>/index.php?r=cart/index" class="btn btn-outline-dark rounded-3">
               Torna al carrello
