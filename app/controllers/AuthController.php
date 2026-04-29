@@ -21,13 +21,17 @@ class AuthController {
     unset($_SESSION['cart']);
   }
 
+  // Cerca il metodo loginUser nel tuo AuthController e sostituiscilo con questo:
   private function loginUser(array $user): void {
+    // CRITICO PER LA SICUREZZA
+    session_regenerate_id(true);
+
     $_SESSION['user_id'] = (int)$user['id'];
     $_SESSION['user'] = [
-      'id' => (int)$user['id'],
-      'email' => $user['email'],
-      'full_name' => $user['full_name'],
-      'role' => $user['role'],
+        'id'        => (int)$user['id'],
+        'email'     => $user['email'],
+        'full_name' => $user['full_name'],
+        'role'      => $user['role'], // Assicurati che il DB abbia la colonna 'role'
     ];
 
     $this->mergeSessionCartToDatabase((int)$user['id']);
