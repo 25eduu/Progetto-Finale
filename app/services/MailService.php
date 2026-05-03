@@ -8,6 +8,9 @@ class MailService
 {
     private string $fromEmail;
     private string $fromName;
+    private string $smtpHost;
+    private int $smtpPort;
+    private string $smtpEncryption;
     private string $smtpUser;
     private string $smtpPass;
 
@@ -15,10 +18,13 @@ class MailService
     {
         $env = parse_ini_file(__DIR__ . '/../../.env', false, INI_SCANNER_RAW);
 
-        $this->fromEmail = $env['MAIL_FROM_EMAIL'] ?? '';
-        $this->fromName  = $env['MAIL_FROM_NAME'] ?? 'TechShop';
-        $this->smtpUser  = $env['SMTP_USER'] ?? '';
-        $this->smtpPass  = $env['SMTP_PASS'] ?? '';
+        $this->fromEmail      = $env['MAIL_FROM_EMAIL'] ?? $env['MAIL_FROM'] ?? '';
+        $this->fromName       = $env['MAIL_FROM_NAME'] ?? 'TechShop';
+        $this->smtpHost       = $env['MAIL_HOST'] ?? 'smtp.gmail.com';
+        $this->smtpPort       = (int)($env['MAIL_PORT'] ?? 587);
+        $this->smtpEncryption = $env['MAIL_ENCRYPTION'] ?? 'tls';
+        $this->smtpUser       = $env['SMTP_USER'] ?? $env['MAIL_USERNAME'] ?? '';
+        $this->smtpPass       = $env['SMTP_PASS'] ?? $env['MAIL_PASSWORD'] ?? '';
     }
 
     public function sendTwoFactorCode(string $toEmail, string $fullName, string $code): void
@@ -27,15 +33,16 @@ class MailService
 
         try {
             $mail->isSMTP();
-            $mail->Timeout = 10;
-            $mail->CharSet = 'UTF-8';
-            $mail->SMTPDebug = 0;
-            $mail->Host       = 'smtp.gmail.com';
+            $mail->AuthType = 'LOGIN'; // Forza il metodo LOGIN invece di CRAM-MD5
+            $mail->Timeout    = 10;
+            $mail->CharSet    = 'UTF-8';
+            $mail->SMTPDebug  = 2;
+            $mail->Host       = $this->smtpHost;
             $mail->SMTPAuth   = true;
             $mail->Username   = $this->smtpUser;
             $mail->Password   = $this->smtpPass;
-            $mail->SMTPSecure = 'tls';
-            $mail->Port       = 587;
+            $mail->SMTPSecure = $this->smtpEncryption;
+            $mail->Port       = $this->smtpPort;
 
             $mail->setFrom($this->fromEmail, $this->fromName);
             $mail->addAddress($toEmail);
@@ -63,15 +70,15 @@ class MailService
 
         try {
             $mail->isSMTP();
-            $mail->Timeout = 10;
-            $mail->CharSet = 'UTF-8';
-            $mail->SMTPDebug = 0;
-            $mail->Host       = 'smtp.gmail.com';
+            $mail->AuthType = 'LOGIN'; // Forza il metodo LOGIN invece di CRAM-MD5
+            $mail->Timeout    = 10;
+            $mail->CharSet    = 'UTF-8';
+            $mail->Host       = $this->smtpHost;
             $mail->SMTPAuth   = true;
             $mail->Username   = $this->smtpUser;
             $mail->Password   = $this->smtpPass;
-            $mail->SMTPSecure = 'tls';
-            $mail->Port       = 587;
+            $mail->SMTPSecure = $this->smtpEncryption;
+            $mail->Port       = $this->smtpPort;
 
             $mail->setFrom($this->fromEmail, $this->fromName);
             $mail->addAddress($toEmail);
@@ -88,7 +95,7 @@ class MailService
             $mail->send();
 
         } catch (Exception $e) {
-            // non bloccare ordine
+            throw new RuntimeException('Errore invio mail: ' . $mail->ErrorInfo);
         }
     }
 }

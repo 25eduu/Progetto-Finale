@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../helpers/CsrfHelper.php';
 $fullName = $user['full_name'] ?? 'Utente';
 $email = $user['email'] ?? '';
 $walletBalance = (float)($user['wallet_balance'] ?? 0);
@@ -15,6 +16,9 @@ $totalSpent = (float)($stats['total_spent'] ?? 0);
       </div>
 
       <div class="d-flex gap-2 flex-wrap">
+        <?php if (!empty($user['role']) && $user['role'] === 'admin'): ?>
+          <a href="<?= BASE_URL ?>/index.php?r=admin/dashboard" class="btn btn-warning rounded-pill px-4">📊 Amministrazione</a>
+        <?php endif; ?>
         <a href="<?= BASE_URL ?>/index.php?r=products/index" class="btn btn-outline-dark rounded-pill px-4">Continua gli acquisti</a>
         <a href="<?= BASE_URL ?>/index.php?r=auth/logout" class="btn btn-dark rounded-pill px-4">Logout</a>
       </div>
@@ -27,6 +31,11 @@ $totalSpent = (float)($stats['total_spent'] ?? 0);
             <div class="text-muted small mb-2">Saldo wallet</div>
             <div class="fs-2 fw-bold">€ <?= number_format($walletBalance, 2, ',', '.') ?></div>
             <div class="text-success small mt-2">Disponibile per i prossimi ordini</div>
+            <div class="d-grid gap-2 mt-3">
+              <a href="<?= BASE_URL ?>/index.php?r=checkout/walletRecharge&amount=10" class="btn btn-sm btn-outline-success">+€ 10,00</a>
+              <a href="<?= BASE_URL ?>/index.php?r=checkout/walletRecharge&amount=25" class="btn btn-sm btn-outline-success">+€ 25,00</a>
+              <a href="<?= BASE_URL ?>/index.php?r=checkout/walletRecharge&amount=50" class="btn btn-sm btn-outline-success">+€ 50,00</a>
+            </div>
           </div>
         </div>
       </div>

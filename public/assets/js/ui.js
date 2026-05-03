@@ -143,6 +143,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const displayedTotal = document.getElementById('checkoutDisplayedTotal');
   const submitBtn = document.getElementById('checkoutSubmitBtn');
 
+  if (!paymentMethodInput || options.length === 0 || panels.length === 0) return;
+
   const formatEuro = (value) => {
     return '€ ' + value.toLocaleString('it-IT', {
       minimumFractionDigits: 2,
@@ -201,5 +203,5 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  updateSummary(paymentMethodInput.value);
+  updateSummary(paymentMethodInput.value || 'card');
 });

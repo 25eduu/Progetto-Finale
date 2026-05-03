@@ -22,7 +22,7 @@ class AccountController {
   public function dashboard(): void {
     $userId = $this->requireLogin();
 
-    $stmtUser = $this->pdo->prepare("SELECT id, full_name, email, wallet_balance, created_at FROM users WHERE id = ? LIMIT 1");
+    $stmtUser = $this->pdo->prepare("SELECT id, full_name, email, wallet_balance, role, created_at FROM users WHERE id = ? LIMIT 1");
     $stmtUser->execute([$userId]);
     $user = $stmtUser->fetch(PDO::FETCH_ASSOC);
 
@@ -78,5 +78,44 @@ class AccountController {
     require __DIR__ . '/../views/layouts/header.php';
     require __DIR__ . '/../views/account/dashboard.php';
     require __DIR__ . '/../views/layouts/footer.php';
+  }
+
+  public function rechargeWallet(): void
+  {
+    CsrfHelper::validate();
+    
+    $userId = $this->requireLogin();
+    $amount = (float)($_POST['amount'] ?? 0);
+
+    if ($amount <= 0) {
+      Flash::error('Importo non valido.', BASE_URL . '/index.php?r=account/dashboard');
+    }
+
+    $this->pdo->beginTransaction();
+    try {
+      $stmt = $this->pdo->prepare("
+        UPDATE users
+        SET wallet_balance = wallet_balance + ?
+        WHERE id = ?
+      ");
+      $stmt->execute([$amount, $userId]);
+
+      $this->pdo->prepare("
+        INSERT INTO wallet_logs (user_id, amount, description, created_at)
+        VALUES (?, ?, ?, NOW())
+      ")->execute([$userId, $amount, 'Ricarica manuale']);
+
+      $this->pdo->commit();
+
+      // Aggiorna sessione
+      if (isset($_SESSION['user'])) {
+        $_SESSION['user']['wallet_balance'] = (float)($_SESSION['user']['wallet_balance'] ?? 0) + $amount;
+      }
+
+      Flash::success('Wallet ricaricato con successo di € ' . number_format($amount, 2, ',', '.'), BASE_URL . '/index.php?r=account/dashboard');
+    } catch (Throwable $e) {
+      $this->pdo->rollBack();
+      Flash::error('Errore durante la ricarica: ' . $e->getMessage(), BASE_URL . '/index.php?r=account/dashboard');
+    }
   }
 }
