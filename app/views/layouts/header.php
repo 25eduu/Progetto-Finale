@@ -87,7 +87,7 @@ $isAdmin      = str_starts_with($currentRoute, 'admin/') || $currentRoute === 'a
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="<?= BASE_URL ?>/index.php?r=account/dashboard">
+            <a class="nav-link" href="<?= BASE_URL ?>/index.php?r=account/profile">
               Ciao, <?= htmlspecialchars($_SESSION['user']['full_name'] ?? 'Utente') ?>
             </a>
           </li>

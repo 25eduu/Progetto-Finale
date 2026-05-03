@@ -17,9 +17,10 @@ $totalSpent = (float)($stats['total_spent'] ?? 0);
 
       <div class="d-flex gap-2 flex-wrap">
         <?php if (!empty($user['role']) && $user['role'] === 'admin'): ?>
-          <a href="<?= BASE_URL ?>/index.php?r=admin/dashboard" class="btn btn-warning rounded-pill px-4">📊 Amministrazione</a>
+          <a href="<?= BASE_URL ?>/index.php?r=admin/dashboard" class="btn btn-warning rounded-pill px-4">📊 Area Admin</a>
         <?php endif; ?>
         <a href="<?= BASE_URL ?>/index.php?r=products/index" class="btn btn-outline-dark rounded-pill px-4">Continua gli acquisti</a>
+        <a href="<?= BASE_URL ?>/index.php?r=account/profile" class="btn btn-outline-dark rounded-pill px-4">Modifica profilo</a>
         <a href="<?= BASE_URL ?>/index.php?r=auth/logout" class="btn btn-dark rounded-pill px-4">Logout</a>
       </div>
     </div>

@@ -62,12 +62,11 @@ class AuthController
         ")->execute([(int)$user['id'], $code, $expiresAt]);
 
         try {
-            $mailService = new MailService();
-            $mailService->sendTwoFactorCode($user['email'], $user['full_name'], $code);
-            
-        } catch (Throwable $e) {
-            echo "<h1>Debug SMTP:</h1><pre>" . $e->getMessage() . "</pre>"; exit;
+        $mailService = new MailService();
+        $mailService->sendTwoFactorCode($user['email'], $user['full_name'], $code);
 
+        } catch (Throwable $e) {
+            error_log('Errore invio codice 2FA per utente #' . $user['id'] . ': ' . $e->getMessage());
             Flash::error(
                 'Impossibile inviare il codice di verifica. Riprova tra qualche minuto.',
                 BASE_URL . '/index.php?r=auth/loginForm'

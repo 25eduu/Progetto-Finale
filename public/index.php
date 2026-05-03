@@ -1,9 +1,19 @@
 <?php
 declare(strict_types=1);
 
-ini_set('display_errors', '1');
-ini_set('log_errors', '1');
-error_reporting(E_ALL);
+// ── Ambiente ────────────────────────────────────────────────────────────────
+// Cambia APP_ENV in 'production' sul server host
+define('APP_ENV', getenv('APP_ENV') ?: 'development');
+
+if (APP_ENV === 'production') {
+    ini_set('display_errors', '0');
+    ini_set('log_errors',     '1');
+    error_reporting(E_ALL);
+} else {
+    ini_set('display_errors', '1');
+    ini_set('log_errors',     '1');
+    error_reporting(E_ALL);
+}
 
 session_start();
 
@@ -14,8 +24,8 @@ require_once __DIR__ . '/../app/helpers/Flash.php';
 require_once __DIR__ . '/../app/helpers/CsrfHelper.php';
 require_once __DIR__ . '/../app/middleware/AuthMiddleware.php';
 
-$route  = trim($_GET['r'] ?? 'home/index', '/');
-$parts  = explode('/', $route, 2);
+$route          = trim($_GET['r'] ?? 'home/index', '/');
+$parts          = explode('/', $route, 2);
 $controllerName = $parts[0];
 $action         = $parts[1] ?? 'index';
 

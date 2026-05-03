@@ -1,6 +1,5 @@
 <?php
 $env          = parse_ini_file(__DIR__ . '/../../../.env', false, INI_SCANNER_RAW);
-$googleClientId = $env['GOOGLE_CLIENT_ID'] ?? '';
 
 // Capisce se siamo in una pagina admin dal route corrente
 $currentRoute = $_GET['r'] ?? '';
@@ -10,7 +9,7 @@ $isAdmin      = str_starts_with($currentRoute, 'admin/') || $currentRoute === 'a
 
 <script>
   window.BASE_URL          = "<?= BASE_URL ?>";
-  window.GOOGLE_CLIENT_ID  = "<?= htmlspecialchars($googleClientId, ENT_QUOTES) ?>";
+  window.GOOGLE_CLIENT_ID  = "<?= htmlspecialchars(GOOGLE_CLIENT_ID, ENT_QUOTES) ?>";
 </script>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
