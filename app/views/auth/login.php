@@ -15,12 +15,23 @@
           <?= CsrfHelper::field() ?>
           <div class="mb-3">
             <label class="form-label fw-medium">Email</label>
-            <input type="email" name="email" class="form-control form-control-lg rounded-3" placeholder="nome@email.com" required autocomplete="email">
+            <input type="email" name="email" class="form-control form-control-lg rounded-3"
+                   placeholder="nome@email.com" required autocomplete="email">
           </div>
-          <div class="mb-4">
+          <div class="mb-3">
             <label class="form-label fw-medium">Password</label>
-            <input type="password" name="password" class="form-control form-control-lg rounded-3" placeholder="••••••••" required autocomplete="current-password">
+            <input type="password" name="password" class="form-control form-control-lg rounded-3"
+                   placeholder="••••••••" required autocomplete="current-password">
           </div>
+
+          <!-- Checkbox remember me -->
+          <div class="mb-4 form-check">
+            <input type="checkbox" name="remember_me" id="rememberMe" class="form-check-input" value="1">
+            <label class="form-check-label text-muted small" for="rememberMe">
+              Ricordami per 30 giorni
+            </label>
+          </div>
+
           <button type="submit" class="btn btn-dark btn-lg w-100 rounded-3">Accedi</button>
         </form>
         <div class="text-center mt-3">

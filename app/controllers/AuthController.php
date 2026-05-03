@@ -10,6 +10,9 @@ class AuthController
 {
     private PDO $pdo;
 
+    // Durata cookie "ricordami": 30 giorni
+    private const REMEMBER_TTL = 60 * 60 * 24 * 30;
+
     public function __construct(PDO $pdo)
     {
         $this->pdo = $pdo;
@@ -30,7 +33,6 @@ class AuthController
 
     private function loginUser(array $user): void
     {
-        // Prevenzione session fixation
         session_regenerate_id(true);
 
         $_SESSION['user_id'] = (int)$user['id'];
@@ -44,12 +46,112 @@ class AuthController
         $this->mergeSessionCartToDatabase((int)$user['id']);
     }
 
-    private function startTwoFactorLogin(array $user): void
+    // ── Cookie remember me ────────────────────────────────────────────────
+
+    private function setRememberMeCookie(int $userId): void
+    {
+        // Genera token casuale sicuro
+        $token     = bin2hex(random_bytes(32));
+        $expiresAt = date('Y-m-d H:i:s', time() + self::REMEMBER_TTL);
+        $ip        = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+
+        // Salva nel DB (sostituisce eventuale token precedente per questo utente)
+        $this->pdo->prepare("
+            DELETE FROM user_sessions WHERE user_id = ?
+        ")->execute([$userId]);
+
+        $this->pdo->prepare("
+            INSERT INTO user_sessions (user_id, token, ip_address, last_activity)
+            VALUES (?, ?, ?, NOW())
+        ")->execute([$userId, hash('sha256', $token), $ip]);
+
+        // Imposta cookie sicuro
+        setcookie(
+            'remember_token',
+            $token,
+            [
+                'expires'  => time() + self::REMEMBER_TTL,
+                'path'     => '/',
+                'httponly' => true,           // non accessibile da JS
+                'samesite' => 'Lax',
+                // 'secure' => true,          // decommentare in produzione con HTTPS
+            ]
+        );
+    }
+
+    private function clearRememberMeCookie(int $userId): void
+    {
+        // Rimuove token dal DB
+        $this->pdo->prepare("DELETE FROM user_sessions WHERE user_id = ?")
+            ->execute([$userId]);
+
+        // Scade il cookie immediatamente
+        setcookie('remember_token', '', [
+            'expires'  => time() - 3600,
+            'path'     => '/',
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ]);
+    }
+
+    /**
+     * Chiamato all'inizio di ogni richiesta (da index.php).
+     * Se la sessione non è attiva ma esiste un cookie valido,
+     * riautentica l'utente automaticamente.
+     */
+    public function tryAutoLogin(): void
+    {
+        // Sessione già attiva → nulla da fare
+        if (!empty($_SESSION['user_id'])) {
+            return;
+        }
+
+        $token = $_COOKIE['remember_token'] ?? '';
+        if ($token === '') {
+            return;
+        }
+
+        $hashedToken = hash('sha256', $token);
+
+        $stmt = $this->pdo->prepare("
+            SELECT us.user_id, us.last_activity,
+                   u.id, u.email, u.full_name, u.role
+            FROM user_sessions us
+            JOIN users u ON u.id = us.user_id
+            WHERE us.token = ?
+            LIMIT 1
+        ");
+        $stmt->execute([$hashedToken]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$row) {
+            // Token non trovato → pulisce il cookie orfano
+            setcookie('remember_token', '', ['expires' => time() - 3600, 'path' => '/', 'httponly' => true, 'samesite' => 'Lax']);
+            return;
+        }
+
+        // Aggiorna last_activity
+        $this->pdo->prepare("
+            UPDATE user_sessions SET last_activity = NOW() WHERE token = ?
+        ")->execute([$hashedToken]);
+
+        // Rinnova il cookie per altri 30 giorni
+        $this->setRememberMeCookie((int)$row['user_id']);
+
+        // Avvia la sessione come se avesse fatto login
+        $this->loginUser([
+            'id'        => $row['id'],
+            'email'     => $row['email'],
+            'full_name' => $row['full_name'],
+            'role'      => $row['role'],
+        ]);
+    }
+
+    private function startTwoFactorLogin(array $user, bool $remember = false): void
     {
         $code      = (string)random_int(100000, 999999);
         $expiresAt = date('Y-m-d H:i:s', strtotime('+10 minutes'));
 
-        // Invalida tutti i codici precedenti
         $this->pdo->prepare("
             UPDATE two_factor_codes
             SET is_used = 1
@@ -62,9 +164,8 @@ class AuthController
         ")->execute([(int)$user['id'], $code, $expiresAt]);
 
         try {
-        $mailService = new MailService();
-        $mailService->sendTwoFactorCode($user['email'], $user['full_name'], $code);
-
+            $mailService = new MailService();
+            $mailService->sendTwoFactorCode($user['email'], $user['full_name'], $code);
         } catch (Throwable $e) {
             error_log('Errore invio codice 2FA per utente #' . $user['id'] . ': ' . $e->getMessage());
             Flash::error(
@@ -77,6 +178,7 @@ class AuthController
         $_SESSION['pending_2fa_email']   = $user['email'];
         $_SESSION['pending_2fa_expires'] = time() + 600;
         $_SESSION['otp_attempts']        = 0;
+        $_SESSION['pending_2fa_remember'] = $remember; // ricorda la preferenza
 
         header('Location: ' . BASE_URL . '/index.php?r=auth/verify2faForm');
         exit;
@@ -132,8 +234,9 @@ class AuthController
     {
         CsrfHelper::validate();
 
-        $email    = trim($_POST['email'] ?? '');
-        $password = $_POST['password'] ?? '';
+        $email    = trim($_POST['email']    ?? '');
+        $password = $_POST['password']      ?? '';
+        $remember = isset($_POST['remember_me']); // checkbox
 
         if ($email === '' || $password === '') {
             Flash::error('Email e password sono obbligatori.', BASE_URL . '/index.php?r=auth/loginForm');
@@ -143,12 +246,11 @@ class AuthController
         $stmt->execute([$email]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        // Messaggio volutamente generico per non rivelare se l'email esiste
         if (!$user || empty($user['password']) || !password_verify($password, $user['password'])) {
             Flash::error('Credenziali non valide.', BASE_URL . '/index.php?r=auth/loginForm');
         }
 
-        $this->startTwoFactorLogin($user);
+        $this->startTwoFactorLogin($user, $remember);
     }
 
     public function register(): void
@@ -156,8 +258,8 @@ class AuthController
         CsrfHelper::validate();
 
         $fullName = trim($_POST['full_name'] ?? '');
-        $email    = trim($_POST['email'] ?? '');
-        $password = $_POST['password'] ?? '';
+        $email    = trim($_POST['email']     ?? '');
+        $password = $_POST['password']       ?? '';
 
         if ($fullName === '' || $email === '' || $password === '') {
             Flash::error('Compila tutti i campi.', BASE_URL . '/index.php?r=auth/registerForm');
@@ -198,6 +300,12 @@ class AuthController
 
     public function logout(): void
     {
+        $userId = (int)($_SESSION['user_id'] ?? 0);
+
+        if ($userId > 0) {
+            $this->clearRememberMeCookie($userId);
+        }
+
         session_destroy();
         session_start();
         session_regenerate_id(true);
@@ -220,7 +328,8 @@ class AuthController
                 $_SESSION['pending_2fa_user_id'],
                 $_SESSION['pending_2fa_email'],
                 $_SESSION['pending_2fa_expires'],
-                $_SESSION['otp_attempts']
+                $_SESSION['otp_attempts'],
+                $_SESSION['pending_2fa_remember']
             );
             Flash::error('Il codice è scaduto. Effettua nuovamente il login.', BASE_URL . '/index.php?r=auth/loginForm');
         }
@@ -238,7 +347,8 @@ class AuthController
                 $_SESSION['pending_2fa_user_id'],
                 $_SESSION['pending_2fa_email'],
                 $_SESSION['pending_2fa_expires'],
-                $_SESSION['otp_attempts']
+                $_SESSION['otp_attempts'],
+                $_SESSION['pending_2fa_remember']
             );
             Flash::error('Troppi tentativi errati. Effettua nuovamente il login.', BASE_URL . '/index.php?r=auth/loginForm');
         }
@@ -270,14 +380,22 @@ class AuthController
             Flash::error('Utente non trovato.', BASE_URL . '/index.php?r=auth/loginForm');
         }
 
+        $remember = (bool)($_SESSION['pending_2fa_remember'] ?? false);
+
         unset(
             $_SESSION['pending_2fa_user_id'],
             $_SESSION['pending_2fa_email'],
             $_SESSION['pending_2fa_expires'],
-            $_SESSION['otp_attempts']
+            $_SESSION['otp_attempts'],
+            $_SESSION['pending_2fa_remember']
         );
 
         $this->loginUser($user);
+
+        // Imposta il cookie solo dopo il 2FA completato
+        if ($remember) {
+            $this->setRememberMeCookie((int)$user['id']);
+        }
 
         $intended = $_SESSION['intended_url'] ?? '';
         unset($_SESSION['intended_url']);
@@ -302,7 +420,8 @@ class AuthController
             exit;
         }
 
-        $this->startTwoFactorLogin($user);
+        $remember = (bool)($_SESSION['pending_2fa_remember'] ?? false);
+        $this->startTwoFactorLogin($user, $remember);
     }
 
     public function googleCallback(): void
@@ -312,8 +431,7 @@ class AuthController
             Flash::error('Token Google mancante.', BASE_URL . '/index.php?r=auth/loginForm');
         }
 
-        $env      = parse_ini_file(__DIR__ . '/../../.env', false, INI_SCANNER_RAW);
-        $clientId = $env['GOOGLE_CLIENT_ID'] ?? '';
+        $clientId = GOOGLE_CLIENT_ID;
 
         if ($clientId === '') {
             Flash::error('Configurazione Google mancante.', BASE_URL . '/index.php?r=auth/loginForm');
@@ -371,6 +489,9 @@ class AuthController
         }
 
         $this->loginUser($user);
+
+        // Google login → imposta sempre il remember me (l'utente si è fidato di Google)
+        $this->setRememberMeCookie((int)$user['id']);
 
         header('Location: ' . BASE_URL . '/index.php');
         exit;

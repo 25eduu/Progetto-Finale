@@ -23,6 +23,12 @@ require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../app/helpers/Flash.php';
 require_once __DIR__ . '/../app/helpers/CsrfHelper.php';
 require_once __DIR__ . '/../app/middleware/AuthMiddleware.php';
+require_once __DIR__ . '/../app/models/Cart.php';
+require_once __DIR__ . '/../app/services/MailService.php';
+require_once __DIR__ . '/../app/controllers/AuthController.php';
+
+// ── Auto-login da cookie "ricordami" ─────────────────────────────────────────
+(new AuthController($pdo))->tryAutoLogin();
 
 $route          = trim($_GET['r'] ?? 'home/index', '/');
 $parts          = explode('/', $route, 2);
