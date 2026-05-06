@@ -8,7 +8,7 @@
     $labels   = ['Tutti', 'In attesa', 'Pagati', 'Spediti', 'Completati', 'Annullati'];
     $current  = $_GET['status'] ?? '';
     foreach ($statuses as $i => $s): ?>
-      <a href="<?= BASE_URL ?>/index.php?r=admin/orders<?= $s ? '&status=' . $s : '' ?>"
+      <a href="<?= BASE_URL ?>/index.php?r=adminOrder/index<?= $s ? '&status=' . $s : '' ?>"
          class="btn btn-sm rounded-pill <?= $current === $s ? 'btn-dark' : 'btn-outline-secondary' ?>">
         <?= $labels[$i] ?>
       </a>
@@ -29,20 +29,19 @@
       <table class="table table-hover align-middle mb-0">
         <thead class="table-light">
           <tr>
-            <th class="ps-4">#</th>
-            <th>Cliente</th>
-            <th>Metodo</th>
-            <th>Stato</th>
-            <th class="text-end">Totale</th>
-            <th class="text-end pe-4">Data</th>
-            <th class="text-center">Azione</th>
+            <th class="ps-4">#</th><th>Cliente</th><th>Metodo</th><th>Stato</th>
+            <th class="text-end">Totale</th><th class="text-end pe-4">Data</th><th class="text-center">Azione</th>
           </tr>
         </thead>
         <tbody>
           <?php if (empty($orders)): ?>
             <tr><td colspan="7" class="text-center text-muted py-5">Nessun ordine trovato.</td></tr>
           <?php endif; ?>
-          <?php foreach ($orders as $o): ?>
+          <?php foreach ($orders as $o):
+            $badge = match($o['status']) {
+              'paid' => 'success', 'shipped' => 'info', 'completed' => 'primary',
+              'cancelled' => 'danger', 'pending_payment' => 'warning', default => 'secondary',
+            }; ?>
             <tr>
               <td class="ps-4 fw-semibold">#<?= (int)$o['id'] ?></td>
               <td>
@@ -50,30 +49,18 @@
                 <div class="text-muted small"><?= htmlspecialchars($o['customer_email']) ?></div>
               </td>
               <td><span class="text-capitalize"><?= htmlspecialchars($o['payment_method']) ?></span></td>
-              <td>
-                <?php
-                $badge = match($o['status']) {
-                  'paid'            => 'success',
-                  'shipped'         => 'info',
-                  'completed'       => 'primary',
-                  'cancelled'       => 'danger',
-                  'pending_payment' => 'warning',
-                  default           => 'secondary',
-                };
-                ?>
-                <span class="badge text-bg-<?= $badge ?> rounded-pill"><?= htmlspecialchars($o['status']) ?></span>
-              </td>
+              <td><span class="badge text-bg-<?= $badge ?> rounded-pill"><?= htmlspecialchars($o['status']) ?></span></td>
               <td class="text-end fw-semibold">€ <?= number_format((float)$o['total_amount'], 2, ',', '.') ?></td>
               <td class="text-end text-muted small pe-4"><?= date('d/m/Y H:i', strtotime($o['created_at'])) ?></td>
               <td class="text-center">
-                <form method="post" action="<?= BASE_URL ?>/index.php?r=admin/updateOrderStatus" class="d-flex gap-1 justify-content-center">
+                <form method="post" action="<?= BASE_URL ?>/index.php?r=adminOrder/updateStatus" class="d-flex gap-1 justify-content-center">
                   <?= CsrfHelper::field() ?>
                   <input type="hidden" name="order_id" value="<?= (int)$o['id'] ?>">
                   <select name="status" class="form-select form-select-sm rounded-3" style="width:130px">
-                    <option value="paid"            <?= $o['status']==='paid'            ? 'selected':'' ?>>Pagato</option>
-                    <option value="shipped"         <?= $o['status']==='shipped'         ? 'selected':'' ?>>Spedito</option>
-                    <option value="completed"       <?= $o['status']==='completed'       ? 'selected':'' ?>>Completato</option>
-                    <option value="cancelled"       <?= $o['status']==='cancelled'       ? 'selected':'' ?>>Annullato</option>
+                    <option value="paid"      <?= $o['status']==='paid'      ? 'selected':'' ?>>Pagato</option>
+                    <option value="shipped"   <?= $o['status']==='shipped'   ? 'selected':'' ?>>Spedito</option>
+                    <option value="completed" <?= $o['status']==='completed' ? 'selected':'' ?>>Completato</option>
+                    <option value="cancelled" <?= $o['status']==='cancelled' ? 'selected':'' ?>>Annullato</option>
                   </select>
                   <button type="submit" class="btn btn-outline-dark btn-sm rounded-3">Aggiorna</button>
                 </form>

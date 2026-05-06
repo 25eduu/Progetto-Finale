@@ -18,13 +18,8 @@
       <table class="table table-hover align-middle mb-0">
         <thead class="table-light">
           <tr>
-            <th class="ps-4">#</th>
-            <th>Utente</th>
-            <th>Accesso</th>
-            <th>Ruolo</th>
-            <th class="text-end">Wallet</th>
-            <th class="text-end pe-4">Registrato</th>
-            <th class="text-center">Ricarica wallet</th>
+            <th class="ps-4">#</th><th>Utente</th><th>Accesso</th><th>Ruolo</th>
+            <th class="text-end">Wallet</th><th class="text-end pe-4">Registrato</th><th class="text-center">Ricarica wallet</th>
           </tr>
         </thead>
         <tbody>
@@ -45,14 +40,10 @@
                   <?= htmlspecialchars($u['role']) ?>
                 </span>
               </td>
-              <td class="text-end fw-semibold text-success">
-                € <?= number_format((float)$u['wallet_balance'], 2, ',', '.') ?>
-              </td>
-              <td class="text-end text-muted small pe-4">
-                <?= date('d/m/Y', strtotime($u['created_at'])) ?>
-              </td>
+              <td class="text-end fw-semibold text-success">€ <?= number_format((float)$u['wallet_balance'], 2, ',', '.') ?></td>
+              <td class="text-end text-muted small pe-4"><?= date('d/m/Y', strtotime($u['created_at'])) ?></td>
               <td class="text-center">
-                <form method="post" action="<?= BASE_URL ?>/index.php?r=admin/addWallet"
+                <form method="post" action="<?= BASE_URL ?>/index.php?r=adminUser/addWallet"
                       class="d-flex gap-1 justify-content-center align-items-center">
                   <?= CsrfHelper::field() ?>
                   <input type="hidden" name="user_id" value="<?= (int)$u['id'] ?>">

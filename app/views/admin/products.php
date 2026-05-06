@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../../helpers/CsrfHelper.php';
-$categories = $pdo->query("SELECT id, name FROM categories ORDER BY name")->fetchAll(PDO::FETCH_ASSOC);
+$categories = $pdo->query("SELECT id, name FROM categories ORDER BY name")->fetchAll();
 ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -23,12 +23,8 @@ $categories = $pdo->query("SELECT id, name FROM categories ORDER BY name")->fetc
       <table class="table table-hover align-middle mb-0">
         <thead class="table-light">
           <tr>
-            <th class="ps-4">#</th>
-            <th>Prodotto</th>
-            <th>Categoria</th>
-            <th class="text-end">Prezzo</th>
-            <th class="text-center">Stock</th>
-            <th class="text-center pe-4">Azioni</th>
+            <th class="ps-4">#</th><th>Prodotto</th><th>Categoria</th>
+            <th class="text-end">Prezzo</th><th class="text-center">Stock</th><th class="text-center pe-4">Azioni</th>
           </tr>
         </thead>
         <tbody>
@@ -58,17 +54,15 @@ $categories = $pdo->query("SELECT id, name FROM categories ORDER BY name")->fetc
               </td>
               <td class="text-center pe-4">
                 <div class="d-flex gap-2 justify-content-center">
-                  <!-- Aggiorna stock inline -->
-                  <form method="post" action="<?= BASE_URL ?>/index.php?r=admin/updateStock" class="d-flex gap-1 align-items-center">
+                  <form method="post" action="<?= BASE_URL ?>/index.php?r=adminProduct/updateStock" class="d-flex gap-1 align-items-center">
                     <?= CsrfHelper::field() ?>
                     <input type="hidden" name="product_id" value="<?= (int)$p['id'] ?>">
                     <input type="number" name="stock" value="<?= (int)$p['stock'] ?>" min="0"
                            class="form-control form-control-sm rounded-3 text-center" style="width:70px">
                     <button type="submit" class="btn btn-outline-dark btn-sm rounded-3">Salva</button>
                   </form>
-                  <!-- Elimina -->
-                  <form method="post" action="<?= BASE_URL ?>/index.php?r=admin/deleteProduct"
-                        onsubmit="return confirm('Eliminare il prodotto «<?= htmlspecialchars(addslashes($p['name'])) ?>»?')">
+                  <form method="post" action="<?= BASE_URL ?>/index.php?r=adminProduct/delete"
+                        onsubmit="return confirm('Eliminare «<?= htmlspecialchars(addslashes($p['name'])) ?>»?')">
                     <?= CsrfHelper::field() ?>
                     <input type="hidden" name="product_id" value="<?= (int)$p['id'] ?>">
                     <button type="submit" class="btn btn-outline-danger btn-sm rounded-3">Elimina</button>
@@ -92,7 +86,7 @@ $categories = $pdo->query("SELECT id, name FROM categories ORDER BY name")->fetc
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body px-4">
-        <form method="post" action="<?= BASE_URL ?>/index.php?r=admin/createProduct" enctype="multipart/form-data">
+        <form method="post" action="<?= BASE_URL ?>/index.php?r=adminProduct/create" enctype="multipart/form-data">
           <?= CsrfHelper::field() ?>
           <div class="row g-3">
             <div class="col-md-8">

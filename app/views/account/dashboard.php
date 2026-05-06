@@ -1,10 +1,10 @@
 <?php
 require_once __DIR__ . '/../../helpers/CsrfHelper.php';
-$fullName = $user['full_name'] ?? 'Utente';
-$email = $user['email'] ?? '';
+$fullName      = $user['full_name']      ?? 'Utente';
+$email         = $user['email']          ?? '';
 $walletBalance = (float)($user['wallet_balance'] ?? 0);
-$totalOrders = (int)($stats['total_orders'] ?? 0);
-$totalSpent = (float)($stats['total_spent'] ?? 0);
+$totalOrders   = (int)($stats['total_orders']    ?? 0);
+$totalSpent    = (float)($stats['total_spent']   ?? 0);
 ?>
 
 <section class="py-4">
@@ -14,14 +14,13 @@ $totalSpent = (float)($stats['total_spent'] ?? 0);
         <h1 class="display-6 fw-bold mb-1">La tua dashboard</h1>
         <p class="text-muted mb-0">Ciao <?= htmlspecialchars($fullName) ?>, qui trovi saldo, ordini e movimenti wallet.</p>
       </div>
-
       <div class="d-flex gap-2 flex-wrap">
         <?php if (!empty($user['role']) && $user['role'] === 'admin'): ?>
-          <a href="<?= BASE_URL ?>/index.php?r=admin/dashboard" class="btn btn-warning rounded-pill px-4">📊 Area Admin</a>
+          <a href="<?= BASE_URL ?>/index.php?r=adminDashboard/index" class="btn btn-warning rounded-pill px-4">📊 Area Admin</a>
         <?php endif; ?>
-        <a href="<?= BASE_URL ?>/index.php?r=products/index" class="btn btn-outline-dark rounded-pill px-4">Continua gli acquisti</a>
+        <a href="<?= BASE_URL ?>/index.php?r=products/index"  class="btn btn-outline-dark rounded-pill px-4">Continua gli acquisti</a>
         <a href="<?= BASE_URL ?>/index.php?r=account/profile" class="btn btn-outline-dark rounded-pill px-4">Modifica profilo</a>
-        <a href="<?= BASE_URL ?>/index.php?r=auth/logout" class="btn btn-dark rounded-pill px-4">Logout</a>
+        <a href="<?= BASE_URL ?>/index.php?r=auth/logout"     class="btn btn-dark rounded-pill px-4">Logout</a>
       </div>
     </div>
 
@@ -33,9 +32,9 @@ $totalSpent = (float)($stats['total_spent'] ?? 0);
             <div class="fs-2 fw-bold">€ <?= number_format($walletBalance, 2, ',', '.') ?></div>
             <div class="text-success small mt-2">Disponibile per i prossimi ordini</div>
             <div class="d-grid gap-2 mt-3">
-              <a href="<?= BASE_URL ?>/index.php?r=checkout/walletRecharge&amount=10" class="btn btn-sm btn-outline-success">+€ 10,00</a>
-              <a href="<?= BASE_URL ?>/index.php?r=checkout/walletRecharge&amount=25" class="btn btn-sm btn-outline-success">+€ 25,00</a>
-              <a href="<?= BASE_URL ?>/index.php?r=checkout/walletRecharge&amount=50" class="btn btn-sm btn-outline-success">+€ 50,00</a>
+              <a href="<?= BASE_URL ?>/index.php?r=wallet/recharge&amount=10" class="btn btn-sm btn-outline-success">+€ 10,00</a>
+              <a href="<?= BASE_URL ?>/index.php?r=wallet/recharge&amount=25" class="btn btn-sm btn-outline-success">+€ 25,00</a>
+              <a href="<?= BASE_URL ?>/index.php?r=wallet/recharge&amount=50" class="btn btn-sm btn-outline-success">+€ 50,00</a>
             </div>
           </div>
         </div>
@@ -70,22 +69,13 @@ $totalSpent = (float)($stats['total_spent'] ?? 0);
               <h2 class="h4 mb-0">Ultimi ordini</h2>
               <span class="text-muted small"><?= count($orders) ?> mostrati</span>
             </div>
-
             <?php if (empty($orders)): ?>
-              <div class="alert alert-light border rounded-4 mb-0">
-                Non hai ancora effettuato ordini.
-              </div>
+              <div class="alert alert-light border rounded-4 mb-0">Non hai ancora effettuato ordini.</div>
             <?php else: ?>
               <div class="table-responsive">
                 <table class="table align-middle mb-0">
                   <thead>
-                    <tr>
-                      <th>Ordine</th>
-                      <th>Data</th>
-                      <th>Pagamento</th>
-                      <th>Stato</th>
-                      <th class="text-end">Totale</th>
-                    </tr>
+                    <tr><th>Ordine</th><th>Data</th><th>Pagamento</th><th>Stato</th><th class="text-end">Totale</th></tr>
                   </thead>
                   <tbody>
                     <?php foreach ($orders as $order): ?>
@@ -102,9 +92,6 @@ $totalSpent = (float)($stats['total_spent'] ?? 0);
                           <?php endif; ?>
                           <?php if ((float)$order['stripe_amount_paid'] > 0): ?>
                             <div class="small text-muted">Carta: € <?= number_format((float)$order['stripe_amount_paid'], 2, ',', '.') ?></div>
-                          <?php endif; ?>
-                          <?php if ((float)$order['paypal_amount_paid'] > 0): ?>
-                            <div class="small text-muted">PayPal: € <?= number_format((float)$order['paypal_amount_paid'], 2, ',', '.') ?></div>
                           <?php endif; ?>
                         </td>
                         <td>
@@ -148,15 +135,12 @@ $totalSpent = (float)($stats['total_spent'] ?? 0);
               <h2 class="h4 mb-0">Movimenti wallet</h2>
               <span class="text-muted small"><?= count($walletLogs) ?> recenti</span>
             </div>
-
             <?php if (empty($walletLogs)): ?>
-              <div class="alert alert-light border rounded-4 mb-0">
-                Nessun movimento wallet disponibile.
-              </div>
+              <div class="alert alert-light border rounded-4 mb-0">Nessun movimento wallet disponibile.</div>
             <?php else: ?>
               <div class="d-flex flex-column gap-3">
-                <?php foreach ($walletLogs as $log): ?>
-                  <?php $amount = (float)$log['amount']; ?>
+                <?php foreach ($walletLogs as $log):
+                  $amount = (float)$log['amount']; ?>
                   <div class="border rounded-4 p-3">
                     <div class="d-flex justify-content-between align-items-start gap-3">
                       <div>

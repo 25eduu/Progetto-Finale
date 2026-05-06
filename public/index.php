@@ -1,8 +1,6 @@
 <?php
 declare(strict_types=1);
 
-// ── Ambiente ────────────────────────────────────────────────────────────────
-// Cambia APP_ENV in 'production' sul server host
 define('APP_ENV', getenv('APP_ENV') ?: 'development');
 
 if (APP_ENV === 'production') {
@@ -22,14 +20,17 @@ require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../app/helpers/Flash.php';
 require_once __DIR__ . '/../app/helpers/CsrfHelper.php';
+require_once __DIR__ . '/../app/helpers/ValidationHelper.php';
 require_once __DIR__ . '/../app/middleware/AuthMiddleware.php';
 require_once __DIR__ . '/../app/models/Cart.php';
+require_once __DIR__ . '/../app/models/User.php';
 require_once __DIR__ . '/../app/services/MailService.php';
 require_once __DIR__ . '/../app/controllers/AuthController.php';
 
-// ── Auto-login da cookie "ricordami" ─────────────────────────────────────────
+// ── Auto-login da cookie "ricordami" ──────────────────────────────────────────
 (new AuthController($pdo))->tryAutoLogin();
 
+// ── Router ────────────────────────────────────────────────────────────────────
 $route          = trim($_GET['r'] ?? 'home/index', '/');
 $parts          = explode('/', $route, 2);
 $controllerName = $parts[0];
