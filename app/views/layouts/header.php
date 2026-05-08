@@ -44,23 +44,54 @@ $isAdmin      = str_starts_with($currentRoute, 'admin');
 <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
   <div class="container">
     <a class="navbar-brand fw-bold" href="<?= BASE_URL ?>/index.php">TechShop</a>
+
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
       <span class="navbar-toggler-icon"></span>
     </button>
+
     <div class="collapse navbar-collapse" id="nav">
-      <ul class="navbar-nav ms-auto align-items-lg-center gap-1">
+
+      <!-- ── Barra ricerca live ─────────────────────────────────────────── -->
+      <div class="mx-lg-3 my-2 my-lg-0 flex-lg-grow-1 position-relative" id="navSearchWrapper">
+        <div class="input-group">
+          <input
+            type="search"
+            id="navSearchInput"
+            class="form-control rounded-start-3"
+            placeholder="Cerca prodotti…"
+            autocomplete="off"
+            aria-label="Cerca prodotti">
+          <a href="<?= BASE_URL ?>/index.php?r=products/search"
+             id="navSearchBtn"
+             class="btn btn-dark rounded-end-3 px-3">🔍</a>
+        </div>
+
+        <!-- Dropdown risultati live -->
+        <div id="navSearchDropdown"
+             class="position-absolute w-100 bg-white border rounded-3 shadow-lg mt-1 d-none"
+             style="z-index:1050; top:100%">
+        </div>
+      </div>
+
+      <!-- ── Link navbar ─────────────────────────────────────────────────── -->
+      <ul class="navbar-nav align-items-lg-center gap-1 ms-lg-2">
+
         <li class="nav-item">
           <a class="nav-link" href="<?= BASE_URL ?>/index.php?r=products/index">Prodotti</a>
         </li>
+
         <li class="nav-item">
-          <button type="button" class="btn nav-link position-relative border-0 bg-transparent"
-                  data-bs-toggle="offcanvas" data-bs-target="#miniCartCanvas">
+          <button type="button"
+                  class="btn nav-link position-relative border-0 bg-transparent"
+                  data-bs-toggle="offcanvas"
+                  data-bs-target="#miniCartCanvas">
             Carrello
             <span class="badge bg-dark ms-1 <?= $cartCount > 0 ? '' : 'd-none' ?>" id="cartBadge">
               <?= $cartCount ?>
             </span>
           </button>
         </li>
+
         <?php if (!empty($_SESSION['user_id'])): ?>
           <li class="nav-item">
             <a class="nav-link fw-semibold text-success" href="<?= BASE_URL ?>/index.php?r=account/dashboard">
@@ -85,11 +116,13 @@ $isAdmin      = str_starts_with($currentRoute, 'admin');
             <a class="btn btn-dark btn-sm rounded-pill px-3 ms-1" href="<?= BASE_URL ?>/index.php?r=auth/registerForm">Registrati</a>
           </li>
         <?php endif; ?>
+
       </ul>
     </div>
   </div>
 </nav>
 
+<!-- Mini-cart offcanvas -->
 <div class="offcanvas offcanvas-end" tabindex="-1" id="miniCartCanvas">
   <div class="offcanvas-header">
     <h5 class="offcanvas-title">Carrello</h5>

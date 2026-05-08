@@ -24,9 +24,9 @@ $isAdmin      = str_starts_with($currentRoute, 'admin') || str_starts_with($curr
   </script>
 <?php else: ?>
   <script src="<?= BASE_URL ?>/assets/js/cart.js"></script>
+  <script src="<?= BASE_URL ?>/assets/js/search.js"></script>
   <script src="<?= BASE_URL ?>/assets/js/google.js"></script>
   <script src="<?= BASE_URL ?>/assets/js/ui.js"></script>
 <?php endif; ?>
-
 </body>
 </html>
