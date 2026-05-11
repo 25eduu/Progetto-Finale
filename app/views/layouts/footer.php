@@ -1,8 +1,6 @@
 <?php
 $currentRoute = $_GET['r'] ?? '';
-$isAdmin      = str_starts_with($currentRoute, 'admin') || str_starts_with($currentRoute, 'adminDashboard')
-             || str_starts_with($currentRoute, 'adminProduct') || str_starts_with($currentRoute, 'adminOrder')
-             || str_starts_with($currentRoute, 'adminUser');
+$isAdmin      = str_starts_with($currentRoute, 'admin');
 ?>
 </main>
 
@@ -23,10 +21,11 @@ $isAdmin      = str_starts_with($currentRoute, 'admin') || str_starts_with($curr
     });
   </script>
 <?php else: ?>
-  <script src="<?= BASE_URL ?>/assets/js/cart.js"></script>
+  <script src="<?= BASE_URL ?>/assets/js/minicart.js"></script>
   <script src="<?= BASE_URL ?>/assets/js/search.js"></script>
   <script src="<?= BASE_URL ?>/assets/js/google.js"></script>
   <script src="<?= BASE_URL ?>/assets/js/ui.js"></script>
 <?php endif; ?>
+
 </body>
 </html>
