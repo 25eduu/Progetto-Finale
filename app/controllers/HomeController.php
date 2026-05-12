@@ -13,7 +13,10 @@ class HomeController {
   public function index(): void {
     $productModel = new Product($this->pdo);
     $products = $productModel->getLatest(8);
-  
+
+    $categoryStmt = $this->pdo->query("SELECT id, name FROM categories ORDER BY id LIMIT 3");
+    $homeCategories = $categoryStmt->fetchAll();
+
     $pdo = $this->pdo;
     require __DIR__ . '/../views/layouts/header.php';
     require __DIR__ . '/../views/home/index.php';

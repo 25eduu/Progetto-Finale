@@ -28,16 +28,25 @@ $values = [
 
 $categories = $pdo->query("SELECT id, name FROM categories ORDER BY name")->fetchAll();
 
-// ── Elaborazione POST (postback) ──────────────────────────────────────────────
+$request = $_SERVER['REQUEST_METHOD'] === 'POST' ? $_POST : $_GET;
+$searchRequest = $_SERVER['REQUEST_METHOD'] === 'POST'
+    || isset($_GET['query'])
+    || isset($_GET['category_id'])
+    || isset($_GET['price_min'])
+    || isset($_GET['price_max'])
+    || isset($_GET['in_stock'])
+    || isset($_GET['sort']);
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+// ── Elaborazione POST / GET (postback e filtri tramite URL) ──────────────────
 
-    $values['query']       = trim($_POST['query']       ?? '');
-    $values['category_id'] = trim($_POST['category_id'] ?? '');
-    $values['price_min']   = trim($_POST['price_min']   ?? '');
-    $values['price_max']   = trim($_POST['price_max']   ?? '');
-    $values['in_stock']    = isset($_POST['in_stock']);
-    $values['sort']        = $_POST['sort'] ?? 'newest';
+if ($searchRequest) {
+
+    $values['query']       = trim($request['query']       ?? '');
+    $values['category_id'] = trim($request['category_id'] ?? '');
+    $values['price_min']   = trim($request['price_min']   ?? '');
+    $values['price_max']   = trim($request['price_max']   ?? '');
+    $values['in_stock']    = isset($request['in_stock']);
+    $values['sort']        = $request['sort'] ?? 'newest';
 
     $priceMin = $values['price_min'] !== '' ? (float)$values['price_min'] : null;
     $priceMax = $values['price_max'] !== '' ? (float)$values['price_max'] : null;
@@ -142,8 +151,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       placeholder="Cerca per nome o descrizione… es. iPhone, MacBook, USB-C"
       autocomplete="off"
       autofocus>
-    <button type="submit" class="btn btn-dark px-4 rounded-end-3">
-      🔍 Cerca
+    <button type="submit" class="btn btn-dark px-4 rounded-end-3 d-flex align-items-center gap-2">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true">
+        <circle cx="11" cy="11" r="7" />
+        <path d="M21 21l-4.35-4.35" />
+      </svg>
+      Cerca
     </button>
   </div>
 

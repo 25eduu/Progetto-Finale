@@ -3,11 +3,16 @@ require_once __DIR__ . '/../../helpers/CsrfHelper.php';
 $categories = $pdo->query("SELECT id, name FROM categories ORDER BY name")->fetchAll();
 ?>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
   <h1 class="display-6 fw-bold mb-0">Prodotti</h1>
-  <button class="btn btn-dark rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addProductModal">
-    + Nuovo prodotto
-  </button>
+  <div class="d-flex gap-2 flex-wrap">
+    <button class="btn btn-outline-dark rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#importProductsModal">
+      Importa CSV
+    </button>
+    <button class="btn btn-dark rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addProductModal">
+      + Nuovo prodotto
+    </button>
+  </div>
 </div>
 
 <?php if (!empty($flash['success'])): ?>
@@ -122,6 +127,41 @@ $categories = $pdo->query("SELECT id, name FROM categories ORDER BY name")->fetc
           <div class="d-flex gap-2 justify-content-end mt-4">
             <button type="button" class="btn btn-outline-secondary rounded-3" data-bs-dismiss="modal">Annulla</button>
             <button type="submit" class="btn btn-dark rounded-3 px-4">Crea prodotto</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal import prodotti -->
+<div class="modal fade" id="importProductsModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content rounded-4 border-0 shadow">
+      <div class="modal-header border-0 px-4 pt-4">
+        <h2 class="h5 fw-semibold mb-0">Importa prodotti</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body px-4">
+        <p class="text-muted">Carica un file CSV con i prodotti e un archivio ZIP con le immagini. I file immagine devono essere nominati come specificato nella colonna <code>image_filename</code>.</p>
+        <form method="post" action="<?= BASE_URL ?>/index.php?r=adminProduct/importCsv" enctype="multipart/form-data">
+          <?= CsrfHelper::field() ?>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-medium">File CSV *</label>
+              <input type="file" name="csv" class="form-control rounded-3" accept=".csv" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-medium">Archivio immagini (ZIP)</label>
+              <input type="file" name="images_zip" class="form-control rounded-3" accept=".zip">
+            </div>
+          </div>
+          <div class="mt-3 small text-muted">
+            Intestazioni CSV richieste: <code>category,name,description,price,stock,image_filename</code>.
+          </div>
+          <div class="d-flex gap-2 justify-content-end mt-4">
+            <button type="button" class="btn btn-outline-secondary rounded-3" data-bs-dismiss="modal">Annulla</button>
+            <button type="submit" class="btn btn-dark rounded-3 px-4">Importa</button>
           </div>
         </form>
       </div>

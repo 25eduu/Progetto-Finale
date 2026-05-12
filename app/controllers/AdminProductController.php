@@ -74,6 +74,142 @@ class AdminProductController
         Flash::success('Prodotto creato.', BASE_URL . '/index.php?r=adminProduct/index');
     }
 
+    public function importCsv(): void
+    {
+        CsrfHelper::validate();
+
+        if (empty($_FILES['csv']['tmp_name']) || !is_uploaded_file($_FILES['csv']['tmp_name'])) {
+            Flash::error('Seleziona un file CSV da importare.', BASE_URL . '/index.php?r=adminProduct/index');
+        }
+
+        $csvPath = $_FILES['csv']['tmp_name'];
+        $zipPath = $_FILES['images_zip']['tmp_name'] ?? null;
+        $hasZip  = !empty($_FILES['images_zip']['name']) && is_uploaded_file($zipPath);
+
+        $categories = [];
+        $stmt = $this->pdo->query('SELECT id, name FROM categories');
+        foreach ($stmt->fetchAll() as $row) {
+            $categories[strtolower($row['name'])] = (int)$row['id'];
+        }
+
+        if (empty($categories)) {
+            Flash::error('Nessuna categoria trovata. Aggiungi le categorie prima di importare.', BASE_URL . '/index.php?r=adminProduct/index');
+        }
+
+        $tempImages = [];
+        $extractDir = null;
+        if ($hasZip) {
+            $extractDir = sys_get_temp_dir() . '/import_' . uniqid();
+            mkdir($extractDir, 0755, true);
+            $zip = new ZipArchive();
+            if ($zip->open($zipPath) !== true) {
+                Flash::error('Impossibile aprire l’archivio ZIP.', BASE_URL . '/index.php?r=adminProduct/index');
+            }
+            $zip->extractTo($extractDir);
+            $zip->close();
+            $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($extractDir));
+            foreach ($files as $file) {
+                if (!$file->isFile()) {
+                    continue;
+                }
+                $name = basename($file->getFilename());
+                $ext  = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+                if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp'], true)) {
+                    $tempImages[$name] = $file->getPathname();
+                }
+            }
+        }
+
+        $handle = fopen($csvPath, 'r');
+        if ($handle === false) {
+            Flash::error('Impossibile leggere il CSV.', BASE_URL . '/index.php?r=adminProduct/index');
+        }
+
+        $headers = fgetcsv($handle);
+        if ($headers === false) {
+            fclose($handle);
+            Flash::error('CSV vuoto o non valido.', BASE_URL . '/index.php?r=adminProduct/index');
+        }
+
+        $headers = array_map('trim', $headers);
+        $required = ['category', 'name', 'description', 'price', 'stock', 'image_filename'];
+        $missing = array_diff($required, $headers);
+        if (!empty($missing)) {
+            fclose($handle);
+            Flash::error('Intestazioni mancanti nel CSV: ' . implode(', ', $missing), BASE_URL . '/index.php?r=adminProduct/index');
+        }
+
+        $mapping = array_flip($headers);
+        $insertStmt = $this->pdo->prepare("INSERT INTO products (category_id, name, description, price, stock, image_path, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())");
+        $imported = 0;
+        $failed = 0;
+
+        while (($row = fgetcsv($handle)) !== false) {
+            if (count($row) !== count($headers)) {
+                $failed++;
+                continue;
+            }
+
+            $row = array_map('trim', $row);
+            $categoryName = strtolower($row[$mapping['category']] ?? '');
+            $name = $row[$mapping['name']] ?? '';
+            $description = $row[$mapping['description']] ?? '';
+            $price = (float)str_replace(',', '.', $row[$mapping['price']] ?? '0');
+            $stock = (int)($row[$mapping['stock']] ?? '0');
+            $imageName = $row[$mapping['image_filename']] ?? '';
+
+            if (!ValidationHelper::notEmpty($name) || !ValidationHelper::positiveFloat($price) || !isset($categories[$categoryName])) {
+                $failed++;
+                continue;
+            }
+
+            $imagePath = null;
+            if ($imageName !== '' && isset($tempImages[$imageName])) {
+                $imagePath = $this->saveImportedImage($tempImages[$imageName], $imageName);
+                if ($imagePath === null) {
+                    $failed++;
+                    continue;
+                }
+            }
+
+            $insertStmt->execute([$categories[$categoryName], $name, $description, $price, $stock, $imagePath]);
+            $imported++;
+        }
+
+        fclose($handle);
+        if ($extractDir !== null) {
+            $this->deleteDirectory($extractDir);
+        }
+
+        Flash::success("Import completato. Prodotti importati: {$imported}. Falliti: {$failed}.", BASE_URL . '/index.php?r=adminProduct/index');
+    }
+
+    private function saveImportedImage(string $sourcePath, string $originalName): ?string
+    {
+        $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+        if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp'], true)) {
+            return null;
+        }
+
+        $filename = uniqid('prod_', true) . '.' . $ext;
+        $dest = __DIR__ . '/../../public/assets/images/' . $filename;
+        if (!copy($sourcePath, $dest)) {
+            return null;
+        }
+
+        return 'images/' . $filename;
+    }
+
+    private function deleteDirectory(string $dir): void
+    {
+        $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST);
+        foreach ($files as $fileinfo) {
+            $todo = ($fileinfo->isDir() ? 'rmdir' : 'unlink');
+            $todo($fileinfo->getRealPath());
+        }
+        rmdir($dir);
+    }
+
     public function delete(): void
     {
         CsrfHelper::validate();

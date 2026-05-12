@@ -36,15 +36,15 @@ composer install
 
 ### 3. Configurare il Database
 - Avvia XAMPP e assicurati che MySQL sia attivo.
-- Crea un database MySQL (ad esempio, `techshop`).
+- Crea un database MySQL, ad esempio `techshop`.
 - Importa lo schema del database:
 ```bash
 mysql -u root -p techshop < database/schema.sql
 ```
 
-### 4. Configurare le Variabili d'Ambiente
-- Copia il file `.env.example` in `.env` (se presente) o crea un file `.env` nella root del progetto.
-- Configura le seguenti variabili nel file `.env`:
+### 4. Creare il file di ambiente
+- Crea un file `.env` nella root del progetto.
+- Inserisci queste variabili:
 ```
 DB_HOST=localhost
 DB_NAME=techshop
@@ -66,12 +66,12 @@ SMTP_PORT=587
 APP_URL=http://localhost/Progetto-Finale/public
 SESSION_SECRET=your_random_secret
 ```
-
-**Nota**: Non committare mai il file `.env` nel repository. Aggiungilo al `.gitignore`.
+- Il progetto carica le variabili da `config/config.php` tramite `parse_ini_file(__DIR__ . '/../.env')`.
+- Assicurati che `.env` sia escluso da Git. Il file `.gitignore` contiene già questa regola.
 
 ### 5. Avviare l'Applicazione
-- Assicurati che XAMPP sia avviato (Apache e MySQL).
-- Naviga a: `http://localhost/Progetto-Finale/public/`
+- Avvia Apache e MySQL in XAMPP.
+- Apri nel browser: `http://localhost/Progetto-Finale/public/`
 
 ## Utilizzo
 
@@ -131,6 +131,18 @@ Progetto-Finale/
 - Per testare i pagamenti, usa le chiavi di test di Stripe.
 - Controlla i log di errore in `app/services/MailService.php` per problemi email.
 - Usa il pannello admin per verificare ordini e stock.
+
+## Import rapido di prodotti
+- Per aggiungere singoli prodotti, usa il pannello admin `Prodotti` e il modulo `+ Nuovo prodotto`.
+- Se vuoi importare molti prodotti in una volta, usa lo script CLI `scripts/import_products.php`.
+- Prepara un CSV con intestazioni:
+  `category,name,description,price,stock,image_filename`
+- Metti i file immagine in una cartella locale e richiamali con il nome esatto.
+- Esegui:
+```bash
+php scripts/import_products.php products.csv import_images
+```
+- Lo script copierà le immagini in `public/assets/images/` e inserirà i prodotti nel database.
 
 ## Contributi
 1. Fork il repository.

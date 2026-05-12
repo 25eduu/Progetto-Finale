@@ -5,7 +5,12 @@ $canUseMixed      = $walletBalance > 0 && $walletBalance < $total;
 ?>
 
 <h1 class="display-6 fw-semibold mb-2">Checkout</h1>
-<p class="text-muted mb-4">Completa il tuo ordine scegliendo il metodo di pagamento che preferisci.</p>
+<p class="text-muted mb-2">Completa il tuo ordine scegliendo il metodo di pagamento che preferisci.</p>
+<div class="checkout-progress mb-4">
+  <div class="checkout-step active" data-step="01">Dati ordine</div>
+  <div class="checkout-step" data-step="02">Pagamento</div>
+  <div class="checkout-step" data-step="03">Conferma</div>
+</div>
 
 <?php if (!empty($flash['error'])): ?>
   <div class="alert alert-danger rounded-4 shadow-sm border-0 checkout-alert mb-4">
@@ -57,7 +62,14 @@ $canUseMixed      = $walletBalance > 0 && $walletBalance < $total;
                   <div class="payment-option__title">Carta di credito o debito</div>
                   <div class="payment-option__desc">Verrai reindirizzato alla pagina sicura di Stripe</div>
                 </div>
-                <div class="payment-option__icon">💳</div>
+                <div class="payment-option__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <rect x="3" y="7" width="18" height="10" rx="2" />
+                    <path d="M3 11h18" />
+                    <path d="M7 15h4" />
+                    <path d="M6 9h3" />
+                  </svg>
+                </div>
               </button>
 
               <button type="button" class="payment-option" data-method="paypal">
@@ -65,7 +77,13 @@ $canUseMixed      = $walletBalance > 0 && $walletBalance < $total;
                   <div class="payment-option__title">PayPal</div>
                   <div class="payment-option__desc">Prossimamente disponibile</div>
                 </div>
-                <div class="payment-option__icon">🅿️</div>
+                <div class="payment-option__icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M10 5h5a3 3 0 0 1 3 3c0 .8-.3 1.5-.8 2" />
+                    <path d="M7 19h5.5a3 3 0 0 0 3-3v-1.5" />
+                    <path d="M9 16.5h2" />
+                  </svg>
+                </div>
               </button>
 
               <?php if ($canUseWalletOnly): ?>
@@ -76,7 +94,13 @@ $canUseMixed      = $walletBalance > 0 && $walletBalance < $total;
                       Saldo disponibile: € <?= number_format($walletBalance, 2, ',', '.') ?>
                     </div>
                   </div>
-                  <div class="payment-option__icon">👛</div>
+                  <div class="payment-option__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M4 8h16a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2z" />
+                      <path d="M4 11h16" />
+                      <path d="M18 12.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" />
+                    </svg>
+                  </div>
                 </button>
               <?php endif; ?>
 
@@ -88,7 +112,13 @@ $canUseMixed      = $walletBalance > 0 && $walletBalance < $total;
                       Scala prima il wallet (€ <?= number_format($walletBalance, 2, ',', '.') ?>), poi Stripe per il residuo
                     </div>
                   </div>
-                  <div class="payment-option__icon">🔀</div>
+                  <div class="payment-option__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M7 8l3 3-3 3" />
+                      <path d="M17 8l-3 3 3 3" />
+                      <path d="M11 12h2" />
+                    </svg>
+                  </div>
                 </button>
               <?php endif; ?>
             </div>
@@ -135,6 +165,7 @@ $canUseMixed      = $walletBalance > 0 && $walletBalance < $total;
             <button class="btn btn-dark btn-lg rounded-3" id="checkoutSubmitBtn" type="submit">
               Vai al pagamento sicuro
             </button>
+            <p class="form-text text-muted mb-0">Trasmissione crittografata e protezione 3D Secure con Stripe.</p>
             <a href="<?= BASE_URL ?>/index.php?r=cart/index" class="btn btn-outline-dark rounded-3">
               Torna al carrello
             </a>
