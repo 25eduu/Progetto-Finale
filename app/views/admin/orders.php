@@ -1,8 +1,13 @@
 <?php require_once __DIR__ . '/../../helpers/CsrfHelper.php'; ?>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <h1 class="display-6 fw-bold mb-0">Ordini</h1>
-  <div class="d-flex gap-2 flex-wrap">
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+  <div>
+    <h1 class="display-6 fw-bold mb-0">Ordini</h1>
+  </div>
+  <div class="d-flex gap-2 flex-wrap align-items-center">
+    <a href="<?= BASE_URL ?>/index.php?r=adminDashboard/index" class="btn btn-outline-secondary rounded-pill px-4">
+      ← Dashboard
+    </a>
     <?php
     $statuses = ['', 'pending_payment', 'paid', 'shipped', 'completed', 'cancelled'];
     $labels   = ['Tutti', 'In attesa', 'Pagati', 'Spediti', 'Completati', 'Annullati'];

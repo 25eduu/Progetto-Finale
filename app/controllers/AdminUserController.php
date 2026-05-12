@@ -59,4 +59,23 @@ class AdminUserController
             BASE_URL . '/index.php?r=adminUser/index'
         );
     }
+
+    public function delete(): void
+    {
+        CsrfHelper::validate();
+
+        $userId      = (int)($_POST['user_id'] ?? 0);
+        $currentUser = AuthMiddleware::requireAdmin();
+
+        if (!ValidationHelper::positiveInt($userId)) {
+            Flash::error('Utente non valido.', BASE_URL . '/index.php?r=adminUser/index');
+        }
+
+        if ($userId === $currentUser) {
+            Flash::error('Non puoi eliminare l\'account con cui sei loggato.', BASE_URL . '/index.php?r=adminUser/index');
+        }
+
+        $this->pdo->prepare('DELETE FROM users WHERE id = ?')->execute([$userId]);
+        Flash::success('Utente eliminato.', BASE_URL . '/index.php?r=adminUser/index');
+    }
 }

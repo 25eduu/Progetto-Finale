@@ -43,6 +43,24 @@ class AdminProductController
 
         Flash::success('Stock aggiornato.', BASE_URL . '/index.php?r=adminProduct/index');
     }
+    
+    public function update(): void
+    {
+        CsrfHelper::validate();
+
+        $id    = (int)($_POST['product_id'] ?? 0);
+        $price = (float)str_replace(',', '.', $_POST['price'] ?? '0');
+        $stock = (int)($_POST['stock'] ?? -1);
+
+        if (!ValidationHelper::positiveInt($id) || !ValidationHelper::positiveFloat($price) || $stock < 0) {
+            Flash::error('Dati non validi.', BASE_URL . '/index.php?r=adminProduct/index');
+        }
+
+        $this->pdo->prepare("UPDATE products SET price = ?, stock = ? WHERE id = ?")
+            ->execute([$price, $stock, $id]);
+
+        Flash::success('Prodotto aggiornato.', BASE_URL . '/index.php?r=adminProduct/index');
+    }
 
     public function create(): void
     {

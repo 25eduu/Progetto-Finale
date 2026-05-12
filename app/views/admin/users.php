@@ -1,8 +1,13 @@
 <?php require_once __DIR__ . '/../../helpers/CsrfHelper.php'; ?>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <h1 class="display-6 fw-bold mb-0">Utenti</h1>
-  <span class="text-muted"><?= count($users) ?> utenti registrati</span>
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+  <div>
+    <h1 class="display-6 fw-bold mb-0">Utenti</h1>
+    <span class="text-muted"><?= count($users) ?> utenti registrati</span>
+  </div>
+  <a href="<?= BASE_URL ?>/index.php?r=adminDashboard/index" class="btn btn-outline-secondary rounded-pill px-4">
+    ← Dashboard
+  </a>
 </div>
 
 <?php if (!empty($flash['success'])): ?>
@@ -19,7 +24,7 @@
         <thead class="table-light">
           <tr>
             <th class="ps-4">#</th><th>Utente</th><th>Accesso</th><th>Ruolo</th>
-            <th class="text-end">Wallet</th><th class="text-end pe-4">Registrato</th><th class="text-center">Ricarica wallet</th>
+            <th class="text-end">Wallet</th><th class="text-end pe-4">Registrato</th><th class="text-center">Ricarica wallet</th><th class="text-center">Azioni</th>
           </tr>
         </thead>
         <tbody>
@@ -52,6 +57,14 @@
                     <input type="number" name="amount" class="form-control" min="0.01" step="0.01" placeholder="0.00" required>
                     <button type="submit" class="btn btn-outline-success">+</button>
                   </div>
+                </form>
+              </td>
+              <td class="text-center pe-4">
+                <form method="post" action="<?= BASE_URL ?>/index.php?r=adminUser/delete"
+                      onsubmit="return confirm('Eliminare l\'utente <?= htmlspecialchars(addslashes($u['full_name'])) ?>?')">
+                  <?= CsrfHelper::field() ?>
+                  <input type="hidden" name="user_id" value="<?= (int)$u['id'] ?>">
+                  <button type="submit" class="btn btn-outline-danger btn-sm rounded-3">Elimina</button>
                 </form>
               </td>
             </tr>

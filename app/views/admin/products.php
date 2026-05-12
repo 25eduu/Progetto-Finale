@@ -4,8 +4,13 @@ $categories = $pdo->query("SELECT id, name FROM categories ORDER BY name")->fetc
 ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-  <h1 class="display-6 fw-bold mb-0">Prodotti</h1>
+  <div>
+    <h1 class="display-6 fw-bold mb-0">Prodotti</h1>
+  </div>
   <div class="d-flex gap-2 flex-wrap">
+    <a href="<?= BASE_URL ?>/index.php?r=adminDashboard/index" class="btn btn-outline-secondary rounded-pill px-4">
+      ← Dashboard
+    </a>
     <button class="btn btn-outline-dark rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#importProductsModal">
       Importa CSV
     </button>
@@ -47,23 +52,22 @@ $categories = $pdo->query("SELECT id, name FROM categories ORDER BY name")->fetc
                 </div>
               </td>
               <td><span class="badge text-bg-secondary rounded-pill"><?= htmlspecialchars($p['category_name']) ?></span></td>
-              <td class="text-end fw-semibold">€ <?= number_format((float)$p['price'], 2, ',', '.') ?></td>
+              <td class="text-end">
+                <input type="number" name="price" form="updateProductForm-<?= (int)$p['id'] ?>"
+                       value="<?= number_format((float)$p['price'], 2, '.', '') ?>" step="0.01" min="0.00"
+                       class="form-control form-control-sm text-end rounded-3" style="max-width:120px">
+              </td>
               <td class="text-center">
-                <?php if ((int)$p['stock'] === 0): ?>
-                  <span class="badge text-bg-danger rounded-pill">Esaurito</span>
-                <?php elseif ((int)$p['stock'] <= 5): ?>
-                  <span class="badge text-bg-warning rounded-pill"><?= (int)$p['stock'] ?></span>
-                <?php else: ?>
-                  <span class="badge text-bg-success rounded-pill"><?= (int)$p['stock'] ?></span>
-                <?php endif; ?>
+                <input type="number" name="stock" form="updateProductForm-<?= (int)$p['id'] ?>"
+                       value="<?= (int)$p['stock'] ?>" min="0"
+                       class="form-control form-control-sm rounded-3 text-center" style="width:70px">
               </td>
               <td class="text-center pe-4">
-                <div class="d-flex gap-2 justify-content-center">
-                  <form method="post" action="<?= BASE_URL ?>/index.php?r=adminProduct/updateStock" class="d-flex gap-1 align-items-center">
+                <div class="d-flex gap-2 justify-content-center flex-wrap">
+                  <form id="updateProductForm-<?= (int)$p['id'] ?>" method="post" action="<?= BASE_URL ?>/index.php?r=adminProduct/update"
+                        class="d-inline-flex gap-1 align-items-center">
                     <?= CsrfHelper::field() ?>
                     <input type="hidden" name="product_id" value="<?= (int)$p['id'] ?>">
-                    <input type="number" name="stock" value="<?= (int)$p['stock'] ?>" min="0"
-                           class="form-control form-control-sm rounded-3 text-center" style="width:70px">
                     <button type="submit" class="btn btn-outline-dark btn-sm rounded-3">Salva</button>
                   </form>
                   <form method="post" action="<?= BASE_URL ?>/index.php?r=adminProduct/delete"
