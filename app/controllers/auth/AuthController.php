@@ -169,8 +169,8 @@ class AuthController
         } catch (Throwable $e) {
             error_log('Errore invio codice 2FA per utente #' . $user['id'] . ': ' . $e->getMessage());
             Flash::error(
-                'Impossibile inviare il codice di verifica. Riprova tra qualche minuto.',
-                BASE_URL . '/index.php?r=auth/loginForm'
+                 $e->getMessage(), // ← mostra errore reale invece del messaggio generico
+        BASE_URL . '/index.php?r=auth/loginForm'
             );
         }
 
@@ -271,7 +271,6 @@ class AuthController
         $fullName = trim($_POST['full_name'] ?? '');
         $email    = trim($_POST['email']     ?? '');
         $password = $_POST['password']       ?? '';
-        $confirmPassword = $_POST['password_confirm'] ?? '';
 
         if ($fullName === '' || $email === '' || $password === '') {
             Flash::error('Compila tutti i campi.', BASE_URL . '/index.php?r=auth/registerForm');
@@ -288,11 +287,6 @@ class AuthController
                 'Password deve contenere: almeno 8 caratteri, una maiuscola, una minuscola, un numero e un carattere speciale.',
                 BASE_URL . '/index.php?r=auth/registerForm'
             );
-        }
-
-        // Verifica che le password coincidano
-        if (!ValidationHelper::matches($password, $confirmPassword)) {
-            Flash::error('Le password non coincidono.', BASE_URL . '/index.php?r=auth/registerForm');
         }
 
         $stmt = $this->pdo->prepare("SELECT id FROM users WHERE email = ? LIMIT 1");

@@ -9,7 +9,7 @@
 <section class="ts-hero">
   <div class="ts-hero__inner">
     <div class="ts-hero__text">
-      <p class="ts-hero__eyebrow">Nuovi arrivi 2025</p>
+      <p class="ts-hero__eyebrow">Nuovi arrivi 2026</p>
       <h1 class="ts-hero__title">
         Tecnologia<br>al <span class="ts-hero__accent">miglior prezzo</span>
       </h1>
@@ -33,11 +33,11 @@
         <span class="ts-hero__stat-l">Prodotti</span>
       </div>
       <div class="ts-hero__stat">
-        <span class="ts-hero__stat-n">4.9★</span>
+        <span class="ts-hero__stat-n">4.7★</span>
         <span class="ts-hero__stat-l">Rating</span>
       </div>
       <div class="ts-hero__stat">
-        <span class="ts-hero__stat-n">48h</span>
+        <span class="ts-hero__stat-n">48/72h</span>
         <span class="ts-hero__stat-l">Consegna</span>
       </div>
     </div>

@@ -61,7 +61,7 @@ $isAdmin = str_starts_with($currentRoute, 'admin');
             </span>
             TikTok
           </a>
-          <a class="footer-social-link footer-social-link--highlight" href="https://wa.me/393272378806?text=Salve%20TechShop" target="_blank" rel="noopener noreferrer">
+          <a class="footer-social-link footer-social-link--highlight" href="https://wa.me/393483338517?text=Salve%20TechShop" target="_blank" rel="noopener noreferrer">
             <span aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M16.5 13.5a6 6 0 1 1-1.5-4.25L18 8.5V5.5a9 9 0 1 0 0 13.5l-2.5-2.5z" />

@@ -20,7 +20,10 @@ class MailService
         $mail->Username   = MAIL_USERNAME;
         $mail->Password   = MAIL_PASSWORD;
         $mail->SMTPSecure = MAIL_ENCRYPTION;
-        $mail->Port       = MAIL_PORT;
+        $mail->Port       = MAIL_PORT;$mail->SMTPDebug = 2; // mostra tutto il dialogo SMTP
+        $mail->Debugoutput = function($str, $level) {
+            error_log("SMTP: $str");
+        };
         $mail->setFrom(MAIL_FROM_EMAIL, MAIL_FROM_NAME);
         return $mail;
     }
@@ -29,7 +32,7 @@ class MailService
     {
         extract($vars);
         ob_start();
-        require __DIR__ . '/../views/emails/' . $template . '.php';
+        require __DIR__ . '/../../views/emails/' . $template . '.php';
         return ob_get_clean();
     }
 
@@ -59,7 +62,7 @@ class MailService
         $mail = $this->buildMailer();
         $mail->addAddress($toEmail);
         $mail->isHTML(true);
-        $mail->Subject = "Ordine #{$orderId} confermato - TechShop";
+        $mail->Subject = "Ordine confermato - TechShop";
         $mail->Body    = $this->renderTemplate('order_confirmation', compact('customerName', 'orderId', 'total'));
 
         try {
