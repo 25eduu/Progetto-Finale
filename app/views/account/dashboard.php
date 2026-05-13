@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../../helpers/CsrfHelper.php';
+require_once __DIR__ . '/../../helpers/security/CsrfHelper.php';
 $fullName      = $user['full_name']      ?? 'Utente';
 $email         = $user['email']          ?? '';
 $walletBalance = (float)($user['wallet_balance'] ?? 0);

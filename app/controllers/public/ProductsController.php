@@ -15,9 +15,9 @@ class ProductsController {
     $products = $productModel->getAll();
 
     $pdo = $this->pdo;
-    require __DIR__ . '/../views/layouts/header.php';
-    require __DIR__ . '/../views/products/index.php';
-    require __DIR__ . '/../views/layouts/footer.php';
+    require __DIR__ . '/../../views/layouts/header.php';
+    require __DIR__ . '/../../views/products/index.php';
+    require __DIR__ . '/../../views/layouts/footer.php';
 }
 
   public function show(): void {
@@ -41,9 +41,9 @@ class ProductsController {
     $related = $model->getRelated($product['category_id'], $product['id']);
     $accessories = $model->getAccessories($product['id']);
   
-    require __DIR__ . '/../views/layouts/header.php';
-    require __DIR__ . '/../views/products/show.php';
-    require __DIR__ . '/../views/layouts/footer.php';
+    require __DIR__ . '/../../views/layouts/header.php';
+    require __DIR__ . '/../../views/products/show.php';
+    require __DIR__ . '/../../views/layouts/footer.php';
   }
 
   /**
@@ -52,9 +52,9 @@ class ProductsController {
     public function search(): void
     {
         $pdo = $this->pdo;
-        require __DIR__ . '/../views/layouts/header.php';
-        require __DIR__ . '/../views/products/search.php';
-        require __DIR__ . '/../views/layouts/footer.php';
+        require __DIR__ . '/../../views/layouts/header.php';
+        require __DIR__ . '/../../views/products/search.php';
+        require __DIR__ . '/../../views/layouts/footer.php';
     }
     
   /**

@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../../helpers/CsrfHelper.php';
+    require_once __DIR__ . '/../../helpers/security/CsrfHelper.php';
 $categories = $pdo->query("SELECT id, name FROM categories ORDER BY name")->fetchAll();
 ?>
 

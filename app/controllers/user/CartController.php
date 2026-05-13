@@ -33,7 +33,7 @@ class CartController extends BaseController
         $items = $this->getCartItems();
         $total = $this->getCartTotal($items);
         ob_start();
-        require __DIR__ . '/../views/cart/_mini_cart.php';
+        require __DIR__ . '/../../views/cart/_mini_cart.php';
         return ob_get_clean();
     }
 
@@ -52,16 +52,16 @@ class CartController extends BaseController
         $items = $this->getCartItems();
         $total = $this->getCartTotal($items);
         $pdo   = $this->pdo;
-        require __DIR__ . '/../views/layouts/header.php';
-        require __DIR__ . '/../views/cart/index.php';
-        require __DIR__ . '/../views/layouts/footer.php';
+        require __DIR__ . '/../../views/layouts/header.php';
+        require __DIR__ . '/../../views/cart/index.php';
+        require __DIR__ . '/../../views/layouts/footer.php';
     }
 
     public function sidebar(): void
     {
         $items = $this->getCartItems();
         $total = $this->getCartTotal($items);
-        require __DIR__ . '/../views/cart/_mini_cart.php';
+        require __DIR__ . '/../../views/cart/_mini_cart.php';
     }
 
     public function add(): void

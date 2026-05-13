@@ -4,7 +4,7 @@ if (isset($_SESSION['user_id']) || isset($_SESSION['user']['id'])) {
     $currentUserId = (int)($_SESSION['user_id'] ?? $_SESSION['user']['id']);
     if (isset($pdo) && $pdo instanceof PDO) {
         try {
-            require_once __DIR__ . '/../../models/Cart.php';
+            require_once __DIR__ . '/../../models/repositories/Cart.php';
             $cartCount = (new Cart($pdo))->countItems($currentUserId);
         } catch (Throwable) { $cartCount = 0; }
     }

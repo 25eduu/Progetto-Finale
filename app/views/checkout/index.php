@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../../helpers/CsrfHelper.php';
+require_once __DIR__ . '/../../helpers/security/CsrfHelper.php';
 $canUseWalletOnly = $walletBalance >= $total;
 $canUseMixed      = $walletBalance > 0 && $walletBalance < $total;
 ?>

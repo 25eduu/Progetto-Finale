@@ -41,8 +41,8 @@ class AdminDashboardController
 
         $flash = Flash::get();
         $pdo   = $this->pdo;
-        require __DIR__ . '/../views/layouts/header.php';
-        require __DIR__ . '/../views/admin/dashboard.php';
-        require __DIR__ . '/../views/layouts/footer.php';
+        require __DIR__ . '/../../views/layouts/header.php';
+        require __DIR__ . '/../../views/admin/dashboard.php';
+        require __DIR__ . '/../../views/layouts/footer.php';
     }
 }

@@ -1,4 +1,4 @@
-<?php require_once __DIR__ . '/../../helpers/CsrfHelper.php'; ?>
+<?php require_once __DIR__ . '/../../helpers/security/CsrfHelper.php'; ?>
 <div class="row justify-content-center py-4">
   <div class="col-lg-5 col-md-7">
     <?php if (!empty($flash['error'])): ?>

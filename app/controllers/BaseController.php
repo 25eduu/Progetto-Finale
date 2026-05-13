@@ -54,7 +54,7 @@ class BaseController
         }
 
         $cart = new Cart($this->pdo);
-        return $cart->getItems((int)$this->getUserId());
+        return $cart->getItemsByUserId((int)$this->getUserId());
     }
 
     /**
