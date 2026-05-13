@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/../../helpers/security/ValidationHelper.php';
+require_once __DIR__ . '/../../helpers/validation/ValidationHelper.php';
 
 // ── Stato iniziale ────────────────────────────────────────────────────────────
 
