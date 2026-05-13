@@ -204,7 +204,14 @@ class AdminProductController
 
     private function saveImportedImage(string $sourcePath, string $originalName): ?string
     {
-        $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+        $allowed = ['image/jpeg', 'image/png', 'image/webp'];
+        $mime = mime_content_type($sourcePath); // ← usa il path reale, non il nome
+        if (!in_array($mime, $allowed, true)) {
+            return null;
+        }
+        $ext = match($mime) {
+            'image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp',
+        };
         if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp'], true)) {
             return null;
         }

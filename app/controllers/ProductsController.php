@@ -67,7 +67,7 @@ class ProductsController {
  
         $query = trim($_GET['q'] ?? '');
  
-        if (strlen($query) < 2) {
+        if (strlen($query) < 2 || strlen($query) > 100) {
             echo json_encode(['results' => []]);
             exit;
         }

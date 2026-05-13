@@ -71,7 +71,7 @@ $categories = $pdo->query("SELECT id, name FROM categories ORDER BY name")->fetc
                     <button type="submit" class="btn btn-outline-dark btn-sm rounded-3">Salva</button>
                   </form>
                   <form method="post" action="<?= BASE_URL ?>/index.php?r=adminProduct/delete"
-                        onsubmit="return confirm('Eliminare «<?= htmlspecialchars(addslashes($p['name'])) ?>»?')">
+                        onsubmit="return confirm('Eliminare ' + <?= json_encode($p['name']) ?> + '?')">
                     <?= CsrfHelper::field() ?>
                     <input type="hidden" name="product_id" value="<?= (int)$p['id'] ?>">
                     <button type="submit" class="btn btn-outline-danger btn-sm rounded-3">Elimina</button>

@@ -410,6 +410,16 @@ class AuthController
             header('Location: ' . BASE_URL . '/index.php?r=auth/loginForm');
             exit;
         }
+        
+        $stmt = $this->pdo->prepare("
+            SELECT expires_at FROM two_factor_codes
+            WHERE user_id = ? ORDER BY id DESC LIMIT 1
+        ");
+        $stmt->execute([$userId]);
+        $last = $stmt->fetchColumn();
+        if ($last && strtotime($last) - time() > 550) { // codice emesso < 60s fa
+            Flash::error('Attendi prima di richiedere un nuovo codice.');
+        }
 
         $stmt = $this->pdo->prepare("SELECT * FROM users WHERE id = ? LIMIT 1");
         $stmt->execute([(int)$_SESSION['pending_2fa_user_id']]);

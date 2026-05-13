@@ -98,6 +98,7 @@ $isAdmin = str_starts_with($currentRoute, 'admin');
   <script src="<?= BASE_URL ?>/assets/js/search.js"></script>
   <script src="<?= BASE_URL ?>/assets/js/google.js"></script>
   <script src="<?= BASE_URL ?>/assets/js/ui.js"></script>
+  <script src="<?= BASE_URL ?>/assets/js/checkout.js"></script>
 <?php endif; ?>
 
 </body>
