@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/../models/Product.php';
+require_once __DIR__ . '/../../models/entities/Product.php';
 
 class HomeController {
   private PDO $pdo;
@@ -18,8 +18,8 @@ class HomeController {
     $homeCategories = $categoryStmt->fetchAll();
 
     $pdo = $this->pdo;
-    require __DIR__ . '/../views/layouts/header.php';
-    require __DIR__ . '/../views/home/index.php';
-    require __DIR__ . '/../views/layouts/footer.php';
+    require __DIR__ . '/../../views/layouts/header.php';
+    require __DIR__ . '/../../views/home/index.php';
+    require __DIR__ . '/../../views/layouts/footer.php';
   }
 }

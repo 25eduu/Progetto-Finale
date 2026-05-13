@@ -50,13 +50,24 @@ if ($headers === false) {
 $headers = array_map('trim', $headers);
 $expected = ['category', 'name', 'description', 'price', 'stock', 'image_filename'];
 $missing = array_diff($expected, $headers);
+$specHeaders = array_filter($headers, fn($column) => str_starts_with($column, 'spec_'));
+$unknownHeaders = array_filter($headers, fn($column) => !in_array($column, $expected, true) && !str_starts_with($column, 'spec_'));
+
 if (!empty($missing)) {
     echo "Intestazioni mancanti nel CSV: " . implode(', ', $missing) . "\n";
     exit(1);
 }
 
+if (!empty($unknownHeaders)) {
+    echo "Intestazioni non riconosciute nel CSV: " . implode(', ', $unknownHeaders) . "\n";
+    exit(1);
+}
+
 $insertStmt = $pdo->prepare(
     'INSERT INTO products (category_id, name, description, price, stock, image_path, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())'
+);
+$insertSpecStmt = $pdo->prepare(
+    'INSERT INTO product_specs (product_id, spec_key, spec_value) VALUES (?, ?, ?)'
 );
 
 $imported = 0;
@@ -101,6 +112,16 @@ while (($row = fgetcsv($handle)) !== false) {
     }
 
     $insertStmt->execute([$categories[$categoryName], $name, $description, $price, $stock, $imagePath]);
+    $productId = (int)$pdo->lastInsertId();
+
+    foreach ($specHeaders as $header) {
+        $value = trim($data[$header] ?? '');
+        if ($value === '') {
+            continue;
+        }
+        $insertSpecStmt->execute([$productId, substr($header, 5), $value]);
+    }
+
     $imported++;
 }
 

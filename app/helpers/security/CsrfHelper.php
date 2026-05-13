@@ -24,6 +24,10 @@ class CsrfHelper
         );
     }
 
+    /**
+     * Valida CSRF token da POST request. Consuma il token dopo la validazione.
+     * @throws Exception se il token non è valido
+     */
     public static function validate(): void
     {
         $token  = $_POST['_csrf_token'] ?? '';
@@ -42,6 +46,31 @@ class CsrfHelper
                 'Sessione scaduta. Ricarica la pagina e riprova.',
                 BASE_URL . '/index.php'
             );
+        }
+    }
+
+    /**
+     * Valida CSRF token per AJAX request (da header X-CSRF-Token)
+     * @throws Exception se il token non è valido
+     */
+    public static function validateAjax(): void
+    {
+        $token  = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+        $stored = $_SESSION[self::TOKEN_KEY] ?? '';
+        $time   = (int)($_SESSION[self::TIME_KEY] ?? 0);
+
+        $valid = $stored !== ''
+            && hash_equals($stored, $token)
+            && (time() - $time) <= self::TOKEN_TTL;
+
+        if (!$valid) {
+            http_response_code(419);
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => false,
+                'error'   => 'CSRF token scaduto. Ricarica la pagina.'
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
         }
     }
 }

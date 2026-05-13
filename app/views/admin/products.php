@@ -161,7 +161,7 @@ $categories = $pdo->query("SELECT id, name FROM categories ORDER BY name")->fetc
             </div>
           </div>
           <div class="mt-3 small text-muted">
-            Intestazioni CSV richieste: <code>category,name,description,price,stock,image_filename</code>.
+            Intestazioni CSV richieste: <code>category,name,description,price,stock,image_filename</code> più eventuali colonne <code>spec_*</code> per specifiche extra.
           </div>
           <div class="d-flex gap-2 justify-content-end mt-4">
             <button type="button" class="btn btn-outline-secondary rounded-3" data-bs-dismiss="modal">Annulla</button>

@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/../../vendor/autoload.php';
-require_once __DIR__ . '/../services/MailService.php';
-require_once __DIR__ . '/../services/StripeService.php';
+require_once __DIR__ . '/../../../vendor/autoload.php';
+require_once __DIR__ . '/../../services/email/MailService.php';
+require_once __DIR__ . '/../../services/payment/StripeService.php';
 
 class StripeWebhookController
 {

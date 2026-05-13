@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/../helpers/Flash.php';
-require_once __DIR__ . '/../helpers/CsrfHelper.php';
-require_once __DIR__ . '/../helpers/ValidationHelper.php';
-require_once __DIR__ . '/../models/User.php';
+require_once __DIR__ . '/../../helpers/ui/Flash.php';
+require_once __DIR__ . '/../../helpers/security/CsrfHelper.php';
+require_once __DIR__ . '/../../helpers/validation/ValidationHelper.php';
+require_once __DIR__ . '/../../models/entities/User.php';
 
 class AccountController
 {
@@ -64,9 +64,9 @@ class AccountController
         $walletLogs = $stmtWalletLogs->fetchAll();
 
         $pdo = $this->pdo;
-        require __DIR__ . '/../views/layouts/header.php';
-        require __DIR__ . '/../views/account/dashboard.php';
-        require __DIR__ . '/../views/layouts/footer.php';
+        require __DIR__ . '/../../views/layouts/header.php';
+        require __DIR__ . '/../../views/account/dashboard.php';
+        require __DIR__ . '/../../views/layouts/footer.php';
     }
 
     // ─── Profilo ──────────────────────────────────────────────────────────────

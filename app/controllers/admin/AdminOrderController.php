@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/../middleware/AuthMiddleware.php';
-require_once __DIR__ . '/../helpers/Flash.php';
-require_once __DIR__ . '/../helpers/CsrfHelper.php';
-require_once __DIR__ . '/../helpers/ValidationHelper.php';
+require_once __DIR__ . '/../../middleware/AuthMiddleware.php';
+require_once __DIR__ . '/../../helpers/ui/Flash.php';
+require_once __DIR__ . '/../../helpers/security/CsrfHelper.php';
+require_once __DIR__ . '/../../helpers/validation/ValidationHelper.php';
 
 class AdminOrderController
 {
@@ -41,9 +41,9 @@ class AdminOrderController
 
         $flash = Flash::get();
         $pdo   = $this->pdo;
-        require __DIR__ . '/../views/layouts/header.php';
-        require __DIR__ . '/../views/admin/orders.php';
-        require __DIR__ . '/../views/layouts/footer.php';
+        require __DIR__ . '/../../views/layouts/header.php';
+        require __DIR__ . '/../../views/admin/orders.php';
+        require __DIR__ . '/../../views/layouts/footer.php';
     }
 
     public function updateStatus(): void

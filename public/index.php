@@ -18,14 +18,20 @@ session_start();
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../config/config.php';
-require_once __DIR__ . '/../app/helpers/Flash.php';
-require_once __DIR__ . '/../app/helpers/CsrfHelper.php';
-require_once __DIR__ . '/../app/helpers/ValidationHelper.php';
+require_once __DIR__ . '/../app/helpers/security/ErrorHandler.php';
+require_once __DIR__ . '/../app/helpers/ui/Flash.php';
+require_once __DIR__ . '/../app/helpers/security/CsrfHelper.php';
+require_once __DIR__ . '/../app/helpers/validation/ValidationHelper.php';
+require_once __DIR__ . '/../app/helpers/security/RateLimitHelper.php';
 require_once __DIR__ . '/../app/middleware/AuthMiddleware.php';
-require_once __DIR__ . '/../app/models/Cart.php';
-require_once __DIR__ . '/../app/models/User.php';
-require_once __DIR__ . '/../app/services/MailService.php';
-require_once __DIR__ . '/../app/controllers/AuthController.php';
+require_once __DIR__ . '/../app/models/repositories/Cart.php';
+require_once __DIR__ . '/../app/models/entities/User.php';
+require_once __DIR__ . '/../app/services/email/MailService.php';
+require_once __DIR__ . '/../app/controllers/BaseController.php';
+require_once __DIR__ . '/../app/controllers/auth/AuthController.php';
+
+// Registra global error handler
+ErrorHandler::register();
 
 // ── Auto-login da cookie "ricordami" ──────────────────────────────────────────
 (new AuthController($pdo))->tryAutoLogin();
@@ -44,7 +50,32 @@ if (!preg_match('/^[a-zA-Z][a-zA-Z0-9]*$/', $controllerName)
 }
 
 $controllerClass = ucfirst($controllerName) . 'Controller';
-$controllerFile  = __DIR__ . '/../app/controllers/' . $controllerClass . '.php';
+
+// Mappa delle sottocartelle per controller
+$controllerFolders = [
+    'admin' => ['AdminDashboard', 'AdminProduct', 'AdminOrder', 'AdminUser'],
+    'user' => ['Account', 'Cart', 'Checkout', 'Wallet'],
+    'auth' => ['Auth'],
+    'api' => ['StripeWebhook'],
+    'public' => ['Home', 'Products']
+];
+
+$controllerFile = null;
+$subfolder = '';
+
+// Cerca il controller nelle sottocartelle
+foreach ($controllerFolders as $folder => $controllers) {
+    if (in_array($controllerClass, array_map(fn($c) => $c . 'Controller', $controllers))) {
+        $controllerFile = __DIR__ . '/../app/controllers/' . $folder . '/' . $controllerClass . '.php';
+        $subfolder = $folder;
+        break;
+    }
+}
+
+// Fallback alla cartella principale (per compatibilità)
+if (!$controllerFile) {
+    $controllerFile = __DIR__ . '/../app/controllers/' . $controllerClass . '.php';
+}
 
 if (!file_exists($controllerFile)) {
     http_response_code(404);

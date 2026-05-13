@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/../../vendor/autoload.php';
-require_once __DIR__ . '/../helpers/Flash.php';
-require_once __DIR__ . '/../helpers/ValidationHelper.php';
-require_once __DIR__ . '/../models/User.php';
-require_once __DIR__ . '/../services/StripeService.php';
+require_once __DIR__ . '/../../../vendor/autoload.php';
+require_once __DIR__ . '/../../helpers/ui/Flash.php';
+require_once __DIR__ . '/../../helpers/validation/ValidationHelper.php';
+require_once __DIR__ . '/../../models/entities/User.php';
+require_once __DIR__ . '/../../services/payment/StripeService.php';
 
 class WalletController
 {
