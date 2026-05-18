@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Creato il: Mag 03, 2026 alle 17:35
+-- Creato il: Mag 18, 2026 alle 13:59
 -- Versione del server: 10.4.32-MariaDB
 -- Versione PHP: 8.2.12
 
@@ -34,13 +34,6 @@ CREATE TABLE `cart` (
   `quantity` int(10) UNSIGNED NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Dump dei dati per la tabella `cart`
---
-
-INSERT INTO `cart` (`id`, `user_id`, `product_id`, `quantity`) VALUES
-(1, 3, 1, 3);
-
 -- --------------------------------------------------------
 
 --
@@ -60,7 +53,10 @@ CREATE TABLE `categories` (
 INSERT INTO `categories` (`id`, `name`, `slug`) VALUES
 (1, 'Smartphone', 'smartphone'),
 (2, 'Laptop', 'laptop'),
-(3, 'Accessori', 'accessori');
+(3, 'Accessori', 'accessori'),
+(4, 'Gaming', 'gaming'),
+(9, 'Casa', 'casa'),
+(10, 'Sport', 'sport');
 
 -- --------------------------------------------------------
 
@@ -99,7 +95,11 @@ INSERT INTO `orders` (`id`, `user_id`, `customer_name`, `customer_email`, `total
 (6, 9, 'Succhino', 'bomoho1918@kynninc.com', 999.00, '', '', 0.00, 999.00, 0.00, NULL, NULL, 'pending', NULL, '2026-05-03 11:49:24'),
 (7, 9, 'Succhino', 'bomoho1918@kynninc.com', 999.00, '', '', 0.00, 999.00, 0.00, 'cs_test_a1pRLDOmqV4R8NZhyNMjG8kZyYEDfyEpBv7wV2nKHBgsBi1BmPpiyXqYwN', NULL, 'pending', NULL, '2026-05-03 11:50:02'),
 (8, 9, 'Succhino', 'bomoho1918@kynninc.com', 999.00, '', '', 0.00, 999.00, 0.00, 'cs_test_a1zeyy35bHpmtbH2Cs0WkVkvkQvwAAY6LLqlhHOOhfo9QNpHmVBUzPS0A1', NULL, 'pending', NULL, '2026-05-03 11:52:38'),
-(12, 9, 'Succhino', 'bomoho1918@kynninc.com', 999.00, 'paid', '', 0.00, 999.00, 0.00, 'cs_test_a1HLVPJhMiYV8mDajLhKbJLZkmboqzE8y09s1JeR0XjNirAq8qB5Oxnxsj', NULL, 'paid', NULL, '2026-05-03 11:59:42');
+(12, 9, 'Succhino', 'bomoho1918@kynninc.com', 999.00, 'paid', '', 0.00, 999.00, 0.00, 'cs_test_a1HLVPJhMiYV8mDajLhKbJLZkmboqzE8y09s1JeR0XjNirAq8qB5Oxnxsj', NULL, 'paid', NULL, '2026-05-03 11:59:42'),
+(13, 3, 'Eduardo Sandragan', 'sandragan.eduardo.studente@itispaleocapa.it', 2997.00, 'created', '', 0.00, 2997.00, 0.00, 'cs_test_a1JlAKk2ZZp3GyKsu7elJGfzk8uM5EAD7LZwPXwrJGzOFZdpfBtt509ytz', NULL, 'pending', NULL, '2026-05-12 15:05:56'),
+(14, 3, 'Eduardo Sandragan', 'sandragan.eduardo.studente@itispaleocapa.it', 2997.00, 'paid', '', 0.00, 2997.00, 0.00, 'cs_test_a1UYcCeSd54IbiPccY4YCvC7XNpE7TR6uwmXo75OBHT6KEyFaOGWsLsutp', NULL, 'pending', NULL, '2026-05-13 13:15:56'),
+(15, 3, 'Eduardo Sandragan', 'sandragan.eduardo.studente@itispaleocapa.it', 699.00, 'paid', '', 0.00, 699.00, 0.00, 'cs_test_a114863A6ZhWCh2HN6e1h2zMacoaLZcPa6ZlXqvLFfPNrDMMMbFriCt7Qw', NULL, 'paid', NULL, '2026-05-13 13:59:14'),
+(16, 10, 'AAA', 'nevok10302@imashr.com', 19.90, 'paid', '', 0.00, 19.90, 0.00, 'cs_test_a1gdbWfGv4mnxkyonxoWrfDpvlUt1Ya0Ipq13Ugox9WbwnI8FVvaAjqKcC', NULL, 'paid', NULL, '2026-05-13 14:31:46');
 
 -- --------------------------------------------------------
 
@@ -128,7 +128,11 @@ INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `quantity`, `unit_pri
 (6, 6, 1, 1, 999.00),
 (7, 7, 1, 1, 999.00),
 (8, 8, 1, 1, 999.00),
-(12, 12, 1, 1, 999.00);
+(12, 12, 1, 1, 999.00),
+(13, 13, 1, 3, 999.00),
+(14, 14, 1, 3, 999.00),
+(15, 15, 1, 1, 699.00),
+(16, 16, 4, 1, 19.90);
 
 -- --------------------------------------------------------
 
@@ -152,12 +156,11 @@ CREATE TABLE `products` (
 --
 
 INSERT INTO `products` (`id`, `category_id`, `name`, `description`, `price`, `stock`, `image_path`, `created_at`) VALUES
-(1, 1, 'iPhone 15', 'Smartphone Apple di ultima generazione', 999.00, 9, 'images/iphone15.png', '2026-03-20 11:33:25'),
+(1, 1, 'iPhone 15', 'Smartphone Apple di ultima generazione', 699.00, 8, 'images/iphone15.png', '2026-03-20 11:33:25'),
 (2, 2, 'MacBook Pro', 'Laptop Apple ad alte prestazioni', 1999.00, 5, 'images/macbook.png', '2026-03-20 11:33:25'),
-(3, 3, 'Caricatore USB-C', 'Caricatore rapido 30W', 29.90, 50, 'images/charger.jpg', '2026-03-20 11:33:25'),
-(4, 3, 'Cover iPhone 15', 'Cover protettiva in silicone per iPhone 15', 19.90, 25, 'images/coveriphone15.png', '2026-03-20 11:33:25'),
-(5, 3, 'Power Bank 10000mAh', 'Batteria portatile USB-C', 34.90, 20, 'images/powerbank.png', '2026-03-20 11:33:25'),
-(6, 3, 'AirPods Pro', 'Auricolari wireless con cancellazione del rumore', 279.00, 12, 'images/airpods.png', '2026-03-20 11:33:25');
+(3, 3, 'Caricatore USB-C', 'Caricatore rapido 30W', 29.90, 50, 'images/charger.png', '2026-03-20 11:33:25'),
+(4, 3, 'Cover iPhone 15', 'Cover protettiva in silicone per iPhone 15', 19.90, 24, 'images/coveriphone15.png', '2026-03-20 11:33:25'),
+(6, 3, 'AirPods Pro', 'Auricolari wireless con cancellazione del rumore', 279.00, 12, 'images/airpodspro.png', '2026-03-20 11:33:25');
 
 -- --------------------------------------------------------
 
@@ -205,7 +208,6 @@ CREATE TABLE `related_products` (
 INSERT INTO `related_products` (`id`, `product_id`, `related_product_id`) VALUES
 (1, 1, 3),
 (2, 1, 4),
-(3, 1, 5),
 (4, 1, 6),
 (5, 2, 3);
 
@@ -256,7 +258,12 @@ INSERT INTO `two_factor_codes` (`id`, `user_id`, `otp_code`, `expires_at`, `is_u
 (26, 9, '394356', '2026-05-03 13:21:27', 1),
 (27, 9, '356676', '2026-05-03 13:22:43', 1),
 (28, 9, '844541', '2026-05-03 16:39:51', 1),
-(29, 9, '338044', '2026-05-03 16:50:09', 1);
+(29, 9, '338044', '2026-05-03 16:50:09', 1),
+(30, 10, '693916', '2026-05-13 16:24:19', 1),
+(31, 10, '187639', '2026-05-13 16:31:10', 1),
+(32, 10, '859476', '2026-05-13 16:37:37', 1),
+(33, 10, '601052', '2026-05-13 16:39:36', 1),
+(34, 10, '694331', '2026-05-13 16:41:03', 1);
 
 -- --------------------------------------------------------
 
@@ -285,13 +292,14 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`id`, `email`, `google_id`, `auth_provider`, `password`, `full_name`, `wallet_balance`, `role`, `remember_token`, `created_at`, `email_verified_at`) VALUES
 (1, 'admin@techshop.it', NULL, 'local', '$2y$10$abcdefghijklmnopqrstuv', 'Admin TechShop', 0.00, 'admin', NULL, '2026-03-20 11:33:25', NULL),
 (2, 'user@techshop.it', NULL, 'local', '$2y$10$abcdefghijklmnopqrstuv', 'Mario Rossi', 150.00, 'user', NULL, '2026-03-20 11:33:25', NULL),
-(3, 'sandragan.eduardo.studente@itispaleocapa.it', '108264398018672446537', 'google', NULL, 'Eduardo Sandragan', 0.00, 'user', NULL, '2026-03-25 07:22:36', '2026-03-25 08:22:36'),
+(3, 'sandragan.eduardo.studente@itispaleocapa.it', '108264398018672446537', 'google', NULL, 'Eduardo Sandragan', 2000.00, 'admin', NULL, '2026-03-25 07:22:36', '2026-03-25 08:22:36'),
 (4, 'carminati.luca.studente@itispaleocapa.it', NULL, 'local', '$2y$10$ADh.cdUp8dvg4KcJ4B8qA.XKWgsmTC0esTRqRr6z5WyzGcH0vqP9i', 'Luca Carminati', 0.00, 'user', NULL, '2026-03-25 07:40:24', NULL),
 (5, 'simij27908@availors.com', NULL, 'local', '$2y$10$eOzwmkQes9FgTSZFD/fq5.PKbl/gb2fMjunufzgQfLltzwRxaOL9u', 'Marco Rossi', 0.00, 'user', NULL, '2026-04-01 06:38:22', NULL),
 (6, 'bonardi.luca.studente@itispaleocapa.it', NULL, 'local', '$2y$10$Na79tWkVRxHjUMWyVJ.WTOJxeHG/eOhb9t/c7yWf1WuAnHwY/yODm', 'Luca Bonardi', 0.00, 'user', NULL, '2026-04-01 06:43:26', NULL),
 (7, 'kesebe6497@cosdas.com', NULL, 'local', '$2y$10$LJJZVsyfrKS19o62sW2MsuVT8fku9rU8JsZBVc6nwyq2RrQ4Wz1gu', 'Marco', 0.00, 'user', NULL, '2026-04-01 07:04:36', NULL),
 (8, 'feniwij715@marvetos.com', NULL, 'local', '$2y$10$AzJvctviJYC8fffieflV1OAtZMViCd9d.DQ53Uk8oYqf1OTqBt6Vu', 'Marcolino', 0.00, 'user', NULL, '2026-04-01 12:54:38', NULL),
-(9, 'bomoho1918@kynninc.com', NULL, 'local', '$2y$10$a.3XE/uU3Fz/nJBWjCy3AOIhxx4LgtmV.0MO2qXuuZ/jCiD38Jqoa', 'Succhino', 100.00, 'admin', NULL, '2026-05-03 10:17:07', NULL);
+(9, 'bomoho1918@kynninc.com', NULL, 'local', '$2y$10$a.3XE/uU3Fz/nJBWjCy3AOIhxx4LgtmV.0MO2qXuuZ/jCiD38Jqoa', 'Succhino', 100.00, 'admin', NULL, '2026-05-03 10:17:07', NULL),
+(10, 'nevok10302@imashr.com', NULL, 'local', '$2y$10$I44VEjmXFWQ3pLBMcXyNkuf0sfa0txHLS.b5ntSLKydISg3RTvdLm', 'AAA', 0.00, 'user', NULL, '2026-05-13 14:13:20', NULL);
 
 -- --------------------------------------------------------
 
@@ -326,7 +334,8 @@ CREATE TABLE `wallet_logs` (
 --
 
 INSERT INTO `wallet_logs` (`id`, `user_id`, `amount`, `description`, `created_at`) VALUES
-(1, 9, 100.00, 'Ricarica manuale', '2026-05-03 14:35:15');
+(1, 9, 100.00, 'Ricarica manuale', '2026-05-03 14:35:15'),
+(2, 3, 2000.00, 'Ricarica manuale da admin', '2026-05-12 15:36:36');
 
 --
 -- Indici per le tabelle scaricate
@@ -422,37 +431,37 @@ ALTER TABLE `wallet_logs`
 -- AUTO_INCREMENT per la tabella `cart`
 --
 ALTER TABLE `cart`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT per la tabella `categories`
 --
 ALTER TABLE `categories`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT per la tabella `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT per la tabella `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT per la tabella `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT per la tabella `product_specs`
 --
 ALTER TABLE `product_specs`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=59;
 
 --
 -- AUTO_INCREMENT per la tabella `related_products`
@@ -464,25 +473,25 @@ ALTER TABLE `related_products`
 -- AUTO_INCREMENT per la tabella `two_factor_codes`
 --
 ALTER TABLE `two_factor_codes`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
 
 --
 -- AUTO_INCREMENT per la tabella `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT per la tabella `user_sessions`
 --
 ALTER TABLE `user_sessions`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT per la tabella `wallet_logs`
 --
 ALTER TABLE `wallet_logs`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- Limiti per le tabelle scaricate

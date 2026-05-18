@@ -180,7 +180,7 @@ class AdminProductController
 
         // Genera filename sicuro e unico
         $filename = uniqid('prod_', true) . '.' . $ext;
-        $dest     = __DIR__ . '/../../public/assets/images/' . $filename;
+        $dest     = __DIR__ . '/../../../public/assets/images/' . $filename;
 
         // Verifica che la directory esista
         if (!is_dir(dirname($dest))) {
