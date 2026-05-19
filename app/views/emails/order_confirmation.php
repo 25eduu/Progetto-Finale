@@ -21,11 +21,34 @@
     <div class="body">
       <p>Ciao <strong><?= htmlspecialchars($customerName) ?></strong>,</p>
       <p>Il tuo ordine è stato confermato con successo. Grazie per aver scelto TechShop!</p>
-      <div class="box">
-        <div class="row"><span>Numero ordine</span><span>#<?= (int)$orderId ?></span></div>
-        <div class="row"><span>Totale pagato</span><span>€ <?= number_format($total, 2, ',', '.') ?></span></div>
+      <div class="box" style="background:#f0f4f8;padding:24px;">
+        <h2 style="font-size:1rem;margin:0 0 12px;font-weight:700;color:#042C53">Riepilogo dell'ordine</h2>
+        <?php if (!empty($items) && is_array($items)): ?>
+          <?php foreach ($items as $item): ?>
+            <?php $unitPrice = (float)($item['unit_price'] ?? $item['price'] ?? 0); ?>
+            <div class="row">
+              <span><?= htmlspecialchars($item['name'] ?? 'Prodotto') ?> × <?= (int)($item['quantity'] ?? 0) ?></span>
+              <span>€ <?= number_format($unitPrice * (int)($item['quantity'] ?? 0), 2, ',', '.') ?></span>
+            </div>
+          <?php endforeach; ?>
+          <div class="row" style="border-top:1px solid #dfe3e8;margin-top:12px;padding-top:12px;font-weight:700;color:#042C53;">
+            <span>Totale ordine</span>
+            <span>€ <?= number_format($total, 2, ',', '.') ?></span>
+          </div>
+        <?php else: ?>
+          <div class="row">
+            <span>Totale ordine</span>
+            <span>€ <?= number_format($total, 2, ',', '.') ?></span>
+          </div>
+        <?php endif; ?>
       </div>
-      <p>Puoi seguire lo stato del tuo ordine dalla tua dashboard.</p>
+
+      <p style="margin-top:20px;color:#555;font-size:0.95rem;">
+        Il tuo ordine è in elaborazione. Ti invieremo un'altra email quando sarà spedito.
+      </p>
+      <p style="font-size:0.85rem;color:#777;">
+        Riferimento ordine: <strong>#<?= (int)$orderId ?></strong>
+      </p>
     </div>
     <div class="footer">TechShop &mdash; Non rispondere a questa email.</div>
   </div>

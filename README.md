@@ -204,5 +204,3 @@ mysql -u root -p ecommerce < database/ecommerce.sql
 9. Ottimizzare le query per liste e ricerca prodotti.
 10. Rendere l’accesso più pulito configurando un **virtual host** in modo da non mostrare `public/` nell’URL.
 
-## 📌 Note finali
-Questo README è stato aggiornato per riflettere il database `database/ecommerce.sql` e le funzionalità attuali del progetto.

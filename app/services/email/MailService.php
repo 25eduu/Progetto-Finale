@@ -57,13 +57,14 @@ class MailService
         string $toEmail,
         string $customerName,
         int    $orderId,
-        float  $total
+        float  $total,
+        array  $items = []
     ): void {
         $mail = $this->buildMailer();
         $mail->addAddress($toEmail);
         $mail->isHTML(true);
         $mail->Subject = "Ordine confermato - TechShop";
-        $mail->Body    = $this->renderTemplate('order_confirmation', compact('customerName', 'orderId', 'total'));
+        $mail->Body    = $this->renderTemplate('order_confirmation', compact('customerName', 'orderId', 'total', 'items'));
 
         try {
             $mail->send();

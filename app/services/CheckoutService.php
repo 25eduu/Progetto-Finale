@@ -105,7 +105,7 @@ class CheckoutService
             $this->pdo->commit();
 
             try {
-                $this->mailService->sendOrderConfirmation($email, $name, $orderId, $total);
+                $this->mailService->sendOrderConfirmation($email, $name, $orderId, $total, $items);
             } catch (Throwable $e) {
                 error_log('Email ordine wallet #' . $orderId . ': ' . $e->getMessage());
             }

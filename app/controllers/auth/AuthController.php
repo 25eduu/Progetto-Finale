@@ -37,10 +37,11 @@ class AuthController
 
         $_SESSION['user_id'] = (int)$user['id'];
         $_SESSION['user']    = [
-            'id'        => (int)$user['id'],
-            'email'     => $user['email'],
-            'full_name' => $user['full_name'],
-            'role'      => $user['role'],
+            'id'             => (int)$user['id'],
+            'email'          => $user['email'],
+            'full_name'      => $user['full_name'],
+            'role'           => $user['role'],
+            'wallet_balance' => (float)($user['wallet_balance'] ?? 0),
         ];
 
         $this->mergeSessionCartToDatabase((int)$user['id']);
@@ -115,7 +116,7 @@ class AuthController
 
         $stmt = $this->pdo->prepare("
             SELECT us.user_id, us.last_activity,
-                   u.id, u.email, u.full_name, u.role
+                   u.id, u.email, u.full_name, u.role, u.wallet_balance
             FROM user_sessions us
             JOIN users u ON u.id = us.user_id
             WHERE us.token = ?
@@ -140,10 +141,11 @@ class AuthController
 
         // Avvia la sessione come se avesse fatto login
         $this->loginUser([
-            'id'        => $row['id'],
-            'email'     => $row['email'],
-            'full_name' => $row['full_name'],
-            'role'      => $row['role'],
+            'id'             => $row['id'],
+            'email'          => $row['email'],
+            'full_name'      => $row['full_name'],
+            'role'           => $row['role'],
+            'wallet_balance' => (float)($row['wallet_balance'] ?? 0),
         ]);
     }
 
@@ -442,12 +444,15 @@ class AuthController
 
     public function googleCallback(): void
     {
-        // Valida state token per prevenire CSRF su OAuth
+        // Nel nuovo flusso Google Identity Services non sempre è presente
+        // il parametro state. Se presente, lo validiamo, altrimenti proseguiamo.
         $stateFromRequest = $_GET['state'] ?? '';
         $stateFromSession = $_SESSION['google_oauth_state'] ?? '';
 
-        if (empty($stateFromRequest) || empty($stateFromSession) || !hash_equals($stateFromRequest, $stateFromSession)) {
-            Flash::error('State token non valido. Riprova il login con Google.', BASE_URL . '/index.php?r=auth/loginForm');
+        if ($stateFromRequest !== '' || $stateFromSession !== '') {
+            if (empty($stateFromRequest) || empty($stateFromSession) || !hash_equals($stateFromRequest, $stateFromSession)) {
+                Flash::error('State token non valido. Riprova il login con Google.', BASE_URL . '/index.php?r=auth/loginForm');
+            }
         }
 
         unset($_SESSION['google_oauth_state']);

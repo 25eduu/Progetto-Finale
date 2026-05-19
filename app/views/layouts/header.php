@@ -14,11 +14,15 @@ if (isset($_SESSION['user_id']) || isset($_SESSION['user']['id'])) {
     }
 }
 
-$headerWalletBalance = 0.0;
+$headerWalletBalance = (float)($_SESSION['user']['wallet_balance'] ?? 0.0);
 if (!empty($_SESSION['user_id']) && isset($pdo)) {
-    $stmt = $pdo->prepare("SELECT wallet_balance FROM users WHERE id = ? LIMIT 1");
-    $stmt->execute([(int)$_SESSION['user_id']]);
-    $headerWalletBalance = (float)($stmt->fetchColumn() ?: 0);
+    try {
+        $stmt = $pdo->prepare("SELECT wallet_balance FROM users WHERE id = ? LIMIT 1");
+        $stmt->execute([(int)$_SESSION['user_id']]);
+        $headerWalletBalance = (float)($stmt->fetchColumn() ?: $headerWalletBalance);
+    } catch (Throwable) {
+        // fallback al valore in sessione se la query fallisce
+    }
 }
 
 $currentRoute = $_GET['r'] ?? '';

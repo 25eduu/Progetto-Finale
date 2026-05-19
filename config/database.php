@@ -7,7 +7,8 @@ $db   = $env['DB_NAME'];
 $user = $env['DB_USER'];
 $pass = $env['DB_PASS'];
 
-$dsn = "mysql:host=$host;dbname=$db;charset=utf8mb4";
+$port = $env['DB_PORT'] ?? '3306';
+$dsn = "mysql:host=$host;port=$port;dbname=$db;charset=utf8mb4";
 
 try {
     $pdo = new PDO($dsn, $user, $pass, [

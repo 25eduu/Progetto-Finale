@@ -52,6 +52,20 @@ class OrderService
         }
     }
 
+    public function getOrderItemsWithProductNames(int $orderId): array
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT oi.product_id, oi.quantity,
+                    CASE WHEN oi.unit_price = 0 THEN p.price ELSE oi.unit_price END AS unit_price,
+                    p.name
+             FROM order_items oi
+             JOIN products p ON p.id = oi.product_id
+             WHERE oi.order_id = ?"
+        );
+        $stmt->execute([$orderId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function decreaseStock(array $items): void
     {
         $stmt = $this->pdo->prepare("UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?");
@@ -114,11 +128,13 @@ class OrderService
             $this->pdo->commit();
 
             try {
+                $orderItems = $this->getOrderItemsWithProductNames($orderId);
                 $this->mailService->sendOrderConfirmation(
                     $order['customer_email'],
                     $order['customer_name'],
                     $orderId,
-                    (float)$order['total_amount']
+                    (float)$order['total_amount'],
+                    $orderItems
                 );
             } catch (Throwable $e) {
                 error_log("completeOrder: errore email ordine #$orderId: " . $e->getMessage());

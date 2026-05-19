@@ -40,7 +40,8 @@ class ProductsController {
     $specs = $model->getSpecs($id);
     $related = $model->getRelated($product['category_id'], $product['id']);
     $accessories = $model->getAccessories($product['id']);
-  
+    $pdo = $this->pdo;
+
     require __DIR__ . '/../../views/layouts/header.php';
     require __DIR__ . '/../../views/products/show.php';
     require __DIR__ . '/../../views/layouts/footer.php';

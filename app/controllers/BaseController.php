@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/../models/entities/Product.php';
 require_once __DIR__ . '/../models/repositories/Cart.php';
 
 class BaseController
@@ -49,12 +50,41 @@ class BaseController
      */
     protected function getCartItems(): array
     {
-        if (!$this->isAuthenticated()) {
+        if ($this->isAuthenticated()) {
+            $cart = new Cart($this->pdo);
+            return $cart->getItemsByUserId((int)$this->getUserId());
+        }
+
+        return $this->getSessionCartItems();
+    }
+
+    protected function getSessionCartItems(): array
+    {
+        $items = [];
+
+        if (empty($_SESSION['cart']) || !is_array($_SESSION['cart'])) {
             return [];
         }
 
-        $cart = new Cart($this->pdo);
-        return $cart->getItemsByUserId((int)$this->getUserId());
+        $productModel = new Product($this->pdo);
+
+        foreach ($_SESSION['cart'] as $productId => $cartItem) {
+            $product = $productModel->findById((int)$productId);
+            if (!$product) {
+                continue;
+            }
+
+            $items[] = [
+                'product_id' => (int)$product['id'],
+                'quantity'   => (int)($cartItem['quantity'] ?? 0),
+                'name'       => $product['name'],
+                'price'      => (float)$product['price'],
+                'stock'      => (int)$product['stock'],
+                'image_path' => $product['image_path'],
+            ];
+        }
+
+        return $items;
     }
 
     /**
@@ -79,12 +109,21 @@ class BaseController
      */
     protected function getCartCount(): int
     {
-        if (!$this->isAuthenticated()) {
+        if ($this->isAuthenticated()) {
+            $cart = new Cart($this->pdo);
+            return $cart->countItems((int)$this->getUserId());
+        }
+
+        if (empty($_SESSION['cart']) || !is_array($_SESSION['cart'])) {
             return 0;
         }
 
-        $cart = new Cart($this->pdo);
-        return $cart->getCount((int)$this->getUserId());
+        $count = 0;
+        foreach ($_SESSION['cart'] as $item) {
+            $count += (int)($item['quantity'] ?? 0);
+        }
+
+        return $count;
     }
 
     /**

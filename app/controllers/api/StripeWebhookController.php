@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../../vendor/autoload.php';
 require_once __DIR__ . '/../../services/email/MailService.php';
+require_once __DIR__ . '/../../services/OrderService.php';
 require_once __DIR__ . '/../../services/payment/StripeService.php';
 
 class StripeWebhookController
@@ -102,11 +103,13 @@ class StripeWebhookController
 
             // 4. Email conferma (fuori transazione)
             try {
+                $orderItems = (new OrderService($this->pdo))->getOrderItemsWithProductNames($orderId);
                 (new MailService())->sendOrderConfirmation(
                     $order['customer_email'],
                     $order['customer_name'],
                     $orderId,
-                    (float)$order['total_amount']
+                    (float)$order['total_amount'],
+                    $orderItems
                 );
             } catch (Throwable $e) {
                 error_log("Stripe webhook: errore email ordine #$orderId: " . $e->getMessage());
